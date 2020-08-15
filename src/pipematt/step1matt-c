@@ -53,7 +53,7 @@ $configdir="AA-CONFIGDIR/";
 $cr_elim="cr_elim";
 $gethead="gethead";
 $satur="satur";
-$sextractor="sex";
+$sextractor="sextractor";
 $select="select_trans_stars";
 $configfile="$configdir"."fnd.sex";
 
