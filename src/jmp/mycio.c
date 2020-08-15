@@ -2,6 +2,9 @@
 #include	<sys/types.h>
 #include	<unistd.h>
 #include	<netinet/in.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 /*
  **************************************************************************
  *
