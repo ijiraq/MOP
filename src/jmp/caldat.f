@@ -73,7 +73,10 @@ C     of year; adjust calendar to start in January
 
         FUNCTION JULDAY(MM,ID,IYYY)
         PARAMETER (IGREG=15+31*(10+12*1582))
-        IF (IYYY.EQ.0) PAUSE 'There is no Year Zero.'
+        IF (IYYY.EQ.0) THEN 
+              WRITE (6, *)'There is no Year Zero.', MM,ID,IYYY
+              CALL EXIT(1)
+      ENDIF
         IF (IYYY.LT.0) IYYY=IYYY+1
         IF (MM.GT.2) THEN
                 JY=IYYY

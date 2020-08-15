@@ -93,10 +93,14 @@ c-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 			LISTA(KK)=J
 			KK=KK+1
 		ELSE IF (IHIT.GT.1) THEN
-			PAUSE 'Improper set in LISTA'
+                   WRITE (6,*) 'Improper set in LISTA'
+                   CALL EXIT(1)
 		ENDIF
 	ENDDO
-	IF (KK.NE.(MA+1)) PAUSE 'Improper set in LISTA'
+	IF (KK.NE.(MA+1)) THEN
+           WRITE (6,*) 'Improper set in LISTA'
+           CALL EXIT(1)
+        ENDIF
 	DO J=1,MFIT
 		DO K=1,MFIT
 			COVAR(J,K)=0.
@@ -166,10 +170,14 @@ c-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 			LISTA(KK)=J
 			KK=KK+1
 		ELSE IF (IHIT.GT.1) THEN
-			PAUSE 'Improper set in LISTA'
+                   WRITE (6,*) 'Improper set in LISTA'
+                   CALL EXIT (1)
 		ENDIF
 	ENDDO
-	IF (KK.NE.(MA+1)) PAUSE 'Improper set in LISTA'
+	IF (KK.NE.(MA+1)) THEN
+           WRITE (6,*) 'Improper set in LISTA'
+           CALL EXIT(1)
+        ENDIF
 	DO J=1,MFIT
 		DO K=1,MFIT
 			COVAR(J,K)=0.
@@ -239,10 +247,14 @@ c-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 			LISTA(KK)=J
 			KK=KK+1
 		ELSE IF (IHIT.GT.1) THEN
-			PAUSE 'Improper set in LISTA'
+                   WRITE (6,*) 'Improper set in LISTA'
+                   CALL EXIT(1)
 		ENDIF
 	ENDDO
-	IF (KK.NE.(MA+1)) PAUSE 'Improper set in LISTA'
+	IF (KK.NE.(MA+1)) THEN
+           WRITE (6,*) 'Improper set in LISTA'
+           CALL EXIT(1)
+        ENDIF
 	DO J=1,MFIT
 		DO K=1,MFIT
 			COVAR(J,K)=0.
@@ -350,7 +362,8 @@ c-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
                           ICOL=K
                        ENDIF
                     ELSE IF (IPIV(K).GT.1) THEN
-                       PAUSE 'Singular matrix'
+                       WRITE (6,*) 'Singular matrix'
+                       CALL EXIT(1)
                     ENDIF
  20              CONTINUE
               ENDIF
@@ -370,7 +383,10 @@ c-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
            ENDIF
            INDXR(I)=IROW
            INDXC(I)=ICOL
-           IF (A(ICOL,ICOL).EQ.0.) PAUSE 'Singular matrix.'
+           IF (A(ICOL,ICOL).EQ.0.) THEN
+              WRITE (6,*) 'Singular matrix.'
+              CALL EXIT(1)
+           ENDIF
            PIVINV=1./A(ICOL,ICOL)
            A(ICOL,ICOL)=1.
            DO 60 L=1,N
