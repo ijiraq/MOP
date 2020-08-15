@@ -3,7 +3,6 @@
 source ../config.inc 
 
 echo $FC
-
 $FC  -c caldat.f
 $FC  -c check_version.f
 $FC  -c close_image.f
@@ -23,15 +22,16 @@ $FC  -c segment.f
 $FC  -c select_stars_util.f
 $FC  -c sort.f
 $FC  -c thresh.f
+$FC  -c var_thresh.f
 
 ar rv $LIBDIRA/libjmp.a caldat.o check_version.o close_image.o convol.o \
 create_header.o fit_util.o get_header.o match_stars_util.o match_two_cats.o \
 momenta.o open_image.o read_center.o read_file_name.o read_seg.o readq.o \
-segment.o select_stars_util.o sort.o thresh.o
+segment.o select_stars_util.o sort.o thresh.o var_thresh.o
 ranlib $LIBDIRA/libjmp.a
 \rm -f caldat.o check_version.o close_image.o convol.o \
 create_header.o fit_util.o get_header.o match_stars_util.o match_two_cats.o \
 momenta.o open_image.o read_center.o read_file_name.o read_seg.o readq.o \
-segment.o select_stars_util.o sort.o thresh.o
+segment.o select_stars_util.o sort.o thresh.o var_thresh.o
 
 exit
