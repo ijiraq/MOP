@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -16,5 +17,6 @@ main(argc, argv)
   while(scanf("%lf %lf", &mjd, &expt) != EOF){
     printf("%.7lf", mjd+expt/(2.0*24.0*60.0*60.0));
   }
+  exit(0);
 }
 

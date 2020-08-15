@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #define MAX_IDX 1000
@@ -6,7 +7,7 @@
 #define LARGE 1e100
 #define MAX_STARS 15000
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -132,6 +133,7 @@ main(argc, argv)
     }
     
   }
+  exit(0);
 
 }
 

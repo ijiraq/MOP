@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -5,7 +6,7 @@
 #define LARGE 1e100
 #define MAX_STARS 15000
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -90,6 +91,7 @@ main(argc, argv)
 	     x[k], y[k], flux[k], area[k], flux_max[k], elong[k], mag[k]);
     }
   }
+  exit(0)
 }
 
 

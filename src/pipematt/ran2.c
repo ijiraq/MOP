@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #define IM1 2147483563
 #define IM2 2147483399
 #define AM (1.0/IM1)

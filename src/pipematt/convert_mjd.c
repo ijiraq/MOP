@@ -1,8 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #define IGREG 2299161
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -35,6 +36,7 @@ main(argc, argv)
   }else{
     printf("%7.5lf", fd);
   }
+  exit(0);
 }
 
 

@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdlib.h>
 #define IGREG (15+31L*(10+12L*1582))
 
 long julday(int mm, int id, int iyyy)

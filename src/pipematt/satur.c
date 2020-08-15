@@ -1,10 +1,11 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
 #define MAXLINE 200
 #define SKIP 0
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -22,7 +23,9 @@ main(argc, argv)
   sscanf(argv[1], "%lf", &satur);
 
   for(i=0; i<SKIP; i++){
-    fgets(line, MAXLINE, stdin);
+    if ( fgets(line, MAXLINE, stdin) == NULL ) {
+      exit(-1);
+    }
   }
 
   /* satur is the flux_max level above which detections are considered saturated */
@@ -32,4 +35,5 @@ main(argc, argv)
       printf("%8.2lf%8.2lf%13.2lf%9.1lf%10.2lf%6.2lf\n", x, y, flux, area, flux_max, elong);
     }
   }
+  exit(0);
 }

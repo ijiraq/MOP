@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 void transf(double a, double b, double c, double d, double e, double f, 
 	      double *x, double *y);
@@ -24,7 +25,7 @@ print_help(void)
   exit (1);
 }
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -34,7 +35,6 @@ main(argc, argv)
   FILE *trans_file;
   double x0, y0, x, y, flux, flux_max, area, mag, elong;
   double a, b, c, d, e, f;
-
 
   if(argc == 1) {
     print_help();
@@ -50,7 +50,9 @@ main(argc, argv)
     exit(-1);
   }
 
-  fscanf(trans_file, "%lf %lf %lf %lf %lf %lf", &a, &b, &c, &d, &e, &f);
+  if ( fscanf(trans_file, "%lf %lf %lf %lf %lf %lf", &a, &b, &c, &d, &e, &f) == 0 ) {
+    exit(1);
+  }
 
   /*
   fgets(line,MAXLINE,stdin);
@@ -62,6 +64,7 @@ main(argc, argv)
     transf(a, b, c, d, e, f, &x, &y);
     printf("%8.2lf%8.2lf%8.2lf%8.2lf%13.2lf%9.1lf%10.2lf%6.2lf\n", x0, y0, x, y, flux, area, flux_max, elong);
   }
+  exit(0);
 }
 
 void transf(double a, double b, double c, double d, double e, double f, 

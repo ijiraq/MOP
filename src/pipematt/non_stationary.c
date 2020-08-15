@@ -1,10 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #define MAX_IDX 1000
 #define MAXLINE 200
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -106,6 +107,7 @@ main(argc, argv)
 	     x0[i][k], y0[i][k], x[i][k], y[i][k], flux[i][k], area[i][k], flux_max[i][k], elong[i][k]);
     }
   }
+  exit(0);
 }
 
 

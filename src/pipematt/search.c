@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #define PI 3.14159265358979323846
 #define TWOPI 6.283185307179586476925287
 #define MAX_IDX 1000
@@ -23,7 +24,7 @@ print_help(void)
   exit (1);
 }
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -73,7 +74,9 @@ main(argc, argv)
     sscanf(argv[2*i+7], "%s", file_name[i]);
     file[i] = fopen(file_name[i], "r");
     for(j=0; j<SKIP; j++){
-      fgets(line, MAXLINE, file[i]);
+      if (fgets(line, MAXLINE, file[i])==NULL) {
+	exit(-1);
+      }
     }
     sscanf(argv[2*i+8], "%lf", &tobs[i]);
     /*printf("%lf\n", tobs[i]);*/
@@ -196,6 +199,7 @@ main(argc, argv)
       }
     }
   }
+  exit(0);
 }
 
 double principal_value_0(double theta)

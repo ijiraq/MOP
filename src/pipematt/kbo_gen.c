@@ -1,9 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #define PI 3.14159265358979323846
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -36,7 +37,7 @@ main(argc, argv)
   sscanf(argv[10],"%lf", &m_max);
   sscanf(argv[11], "%d", &n_min);
   sscanf(argv[12], "%d", &n_max);
-  sscanf(argv[13], "%d", &sd);
+  sscanf(argv[13], "%ld", &sd);
   sscanf(argv[14], "%lf", &pixscale);
 
   /* force the seed, sd, to be negative */
@@ -80,6 +81,7 @@ main(argc, argv)
 	   x, y, m, r/pixscale, a, r, i);
     i++;
   }
+  exit(0);
 }
 
 

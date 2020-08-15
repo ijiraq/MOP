@@ -1,10 +1,11 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
 #define MAXLINE 200
 #define SKIP 7
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -29,7 +30,9 @@ main(argc, argv)
   sscanf(argv[3], "%lf", &p_min);
 
   for(i=0; i<SKIP; i++){
-    fgets(line, MAXLINE, stdin);
+    if ( fgets(line, MAXLINE, stdin) == NULL) {
+	exit(1);
+    }
   }
 
   /* obs_cons is the threshold for 5 pixel seeing */
@@ -46,4 +49,5 @@ main(argc, argv)
 	     x, y, flux, area, flux_max, elong, fwhm);
     }
   }
+  exit(0);
 }

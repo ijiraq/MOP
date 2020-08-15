@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #define MAXLINE 200
@@ -6,7 +7,7 @@
 #define MAX_STARS 15000
 #define FRAC 0.6
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -38,7 +39,7 @@ main(argc, argv)
   fwhm_av = 0.0;
   fwhm_s2 = 0.0;
   j=0;
-  while(scanf("%lf %lf %lf %lf %lf", 
+  while(scanf("%lf %lf %lf %lf %d", 
 	       &x[j], &y[j], &mag[j], &fwhm[j], &id[j]) != EOF){
     fwhm_av += fwhm[j];
     fwhm_s2 += fwhm[j]*fwhm[j];
@@ -64,6 +65,7 @@ main(argc, argv)
   }else{
     printf("%lf\n", fwhm_med);
   }
+  exit(0);
 }
 
 

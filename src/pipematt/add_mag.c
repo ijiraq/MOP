@@ -1,10 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #define MAXLINE 200
 #define SKIP 0
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -20,7 +21,9 @@ main(argc, argv)
   }
 
   for(i=0; i<SKIP; i++){
-    fgets(line, MAXLINE, stdin);
+    if ( fgets(line, MAXLINE, stdin) == NULL ) { 
+	    exit (1);
+    }
   }
 
   flux_min = 1.0;
@@ -34,5 +37,6 @@ main(argc, argv)
     printf("%8.2lf%8.2lf%13.2lf%9.1lf%10.2lf%6.2lf%10.2lf\n",
 	   x, y, flux, area, flux_max, elong, mag);
   }
+  exit(0);
 }
 
