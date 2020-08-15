@@ -12,17 +12,19 @@ C When actually using g77, add the option -fno-automatic
      $  (image_size_max = 2048*1100)
 
       integer*4
-     $  i, i1, i2, n_obj_tot, nx, ny, y_trans, y_offset, j,
-     $  y_seg, n_seg, naxis1, naxis2, lun_i, lun_o, i_seg, n,
-     $  n_obj, size_obj(n_o_max_cat), n_obj_max, narg, iargc, lun_h
+     $     i, i1, i2, n_obj_tot, nx, ny, y_trans, y_offset, j,
+     $     y_seg, n_seg, naxis1, naxis2, lun_i, lun_o, i_seg, n,
+     $     n_obj, size_obj(n_o_max_cat), n_obj_max, narg, iargc, lun_h,
+     $     var_ext, img_ext, lun_v, test_n
 
       real*4
-     $  image(image_size_max), coeff(image_size_max),
-     $  tmp1(image_size_max), mean, sig, thres1, thres2,
-     $  moments(7,n_o_max_cat), max_el, max_int(n_o_max_cat),
-     $  im_sky(image_size_max), maxcount, echelle, echelle_c, sky,
-     $  sfl(n_o_max_cat), dummy
-
+     $     image(image_size_max), coeff(image_size_max),
+     $     variance(image_size_max),
+     $     tmp1(image_size_max), mean, sig, thres1, thres2,
+     $     moments(7,n_o_max_cat), max_el, max_int(n_o_max_cat),
+     $     im_sky(image_size_max), maxcount, echelle, echelle_c, sky,
+     $     sfl(n_o_max_cat), dummy
+      
       character
      $  image_name*80, objects_name*80, base_name*80, arg*80,
      $  line*80, head_name*80
@@ -52,8 +54,9 @@ c Get input parameters
       no_m = .true.
       no_t = .true.
       no_w = .true.
-      help = (narg .ne. 8)
-
+      help = (narg .ne. 10 .and. narg .ne. 8)
+      img_ext = 2
+      var_ext = 0
  90   continue
       if (i .le. narg) then
          call getarg (i, arg)
@@ -76,6 +79,10 @@ c Get input parameters
             call getarg (i, arg)
             read (arg, *) echelle
             no_w = .false.
+         else if (arg(1:2) .eq. '-v') then
+            i = i + 1
+            call getarg (i, arg)
+            read (arg, *) var_ext
          else if ((arg(1:2) .eq. '-h') .or. (arg(1:2) .eq. '-?')) then
             i = narg + 1
             help = .true.
@@ -84,6 +91,14 @@ c Get input parameters
          goto 90
       end if
 
+C     If there is a variance extension, then assume image extension is
+C     not the primary, otherwise, asssume its the primary.
+      if (var_ext .eq. 0) then
+         img_ext = 1
+      else
+         img_ext = 2
+      end if
+      
       j = 1
       do i = 0, narg
          call getarg (i, arg)
@@ -104,12 +119,13 @@ c Get input parameters
       if (help) then
          write (6, *)
      $     'Usage: step1jmp -f <image file> -w <scale> -t <threshold>'//
-     $     ' -m <maxcount>'
+     $     ' -m <maxcount> [-v <ext> ] '
          write (6, *) 'where:'
          write (6, *) '-f <image file>: image to process (no extension)'
          write (6, *) '-w <scale>: FWHM in pixels (int)'
          write (6, *) '-t <threshold>: detection threshold'
          write (6, *) '-m <maxcount>: maximum pixel value allowed'
+         write (6, *) '-v <ext>: variance extension in <image file>'
          stop
       end if
 
@@ -124,6 +140,7 @@ c Get input parameters
       lun_i = 20
       lun_o = 21
       lun_h = 22
+      lun_v = 23
       echelle_c = amax1(echelle, 3.05)
 
 c Open object list file
@@ -132,14 +149,20 @@ c Open object list file
 
 c Open image file and find geometry informations
 
-      call open_image (image_name, lun_i, naxis1, naxis2)
+      call open_image (image_name, lun_i, naxis1, naxis2, img_ext)
+
+c     Open the variance file
+
+      if (var_ext .gt. 0) then
+         call open_image (image_name, lun_v, naxis1, naxis2, var_ext)
+      end if
 
 c Reads in the header keywords, and stores them at beginning of file.
 
       call get_header (head_name, lun_h, lun_o, thres1, echelle,
      $  maxcount)
 
-c Determine image segment size and ofsset
+c Determine image segment size and offset
 
       y_seg = max(2*nint(echelle_c), 20)
       nx = naxis1
@@ -161,25 +184,53 @@ c Loop on the segments
 c Read image segment
 
          call read_seg (image, y_offset, lun_i, nx, ny)
-
+         do i = 1, ny
+            do j = 1, nx
+               image(i*nx+j) = image(i*nx+j) + 100
+            end do
+         end do
+         
+         if (var_ext .ne. 0) then
+            call read_seg (variance, y_offset, lun_v, nx, ny)
+         end if
 c Compute wavelet coefficients at desired scale
 
          call convol (image, echelle_c, coeff, im_sky, tmp1, nx, ny)
 
-c Compute thresholding value
-
-         call momenta (coeff, mean, sig, thres1, nx, ny)
 
 c Create detection mask
-
-         call thresh (coeff, tmp1, mean, sig, thres1, thres2,
-     $     two_thresh, image, sky, nx, ny)
-
+         if (var_ext .eq. 0) then
+c Compute thresholding value
+            call momenta (coeff, mean, sig, thres1, nx, ny)
+            call thresh (coeff, tmp1, mean, sig, thres1, thres2,
+     $           two_thresh, image, sky, nx, ny)
+         else
+            call var_thresh (coeff, tmp1, variance,
+     $           thres1, thres2,
+     $           two_thresh, image, sky, nx, ny, y_offset)
+         end if
 c Detect objects
 
          call segment (image, coeff, im_sky, tmp1, y_offset,
      $     size_obj, moments, sfl, max_int, n_obj, nx, ny, sky,
-     $     n_obj_max, max_el, echelle, echelle_c, .true.)
+     $        n_obj_max, max_el, echelle, echelle_c, .true.)
+
+         if (i_seg .eq. 3) then
+            do i = 2192 - y_offset-5, 2192 - y_offset+5
+               do j = 1385 -5 , 1385 +5
+                  write (6,*) j, i, tmp1(i*nx+ j)
+                  write (6,*) 1395, 2194 - y_offset + 1, tmp1(i*nx+j)
+                  if ( tmp1(i*nx+j) .gt. 0.0 ) then
+                     test_n = int(tmp1(i*nx+j))
+                  end if
+               end do
+            end do
+            write (6, *) n_obj, test_n
+            n = test_n
+            write (6,*) moments(1,n), moments(2,n), size_obj(n),
+     $           max_int(n),
+     $           moments(6, n), moments(7, n)
+         end if
 
 c Get rid of objects in extrem half of overlap strip
 
@@ -201,8 +252,19 @@ c Write objects in file
 
          i = 0
          do n = 1, n_obj
+            if ( n .eq. test_n ) then
+               write (6, *) n, (size_obj(n) .gt. 0),
+     $              (max_int(n) .gt. 0.)
+               write (6, 9000) moments(1,n), moments(2,n),
+     $           moments(6,n), float(size_obj(n)), max_int(n),
+     $           moments(5,n), moments(3,n), moments(4,n), moments(7,n),
+     $           sfl(n)
+            end if
             if ((size_obj(n) .gt. 0) .and. (max_int(n) .gt. 0.)
-     $        .and. (moments(6,n) .gt. 0.95*sqrt(moments(7,n)))) then
+C     $           .and.
+C     $           ((var_ext  .ne. 0 ) .or.
+C     $           (moments(6,n) .gt. 0.95*sqrt(moments(7,n))))
+     $           ) then
                i = i + 1
                write (lun_o, 9000) moments(1,n), moments(2,n),
      $           moments(6,n), float(size_obj(n)), max_int(n),

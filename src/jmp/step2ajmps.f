@@ -160,7 +160,9 @@ c Select bright, isolated stars.
 
       call select_bright (x1(1,nf), y1(1,nf), inten1(1,nf), n1(nf),
      $  x, y, indx, j, inten_max, isol, separ, n_minb, n_max, ok,
-     $  alone, tmpr, indxt1, indxt2)
+     $     alone, tmpr, indxt1, indxt2)
+
+      write (6, *) j, ' bright stars.'
 c      write (6, *) j, ' bright stars.'
 c      do i = 1, j
 c         write (22+10*nf, *) x(i), y(i)
@@ -170,7 +172,7 @@ c Select stars at center
 
       call select_center (x, y, indx, j, x1_br(1,nf), y1_br(1,nf),
      $  indx1(1,nf), n1_br(nf), n_minc, naxis1, naxis2)
-c      write (6, *) n1_br(nf), ' bright stars at center.'
+      write (6, *) n1_br(nf), ' bright stars at center.'
 c      do i = 1, n1_br(nf)
 c         write (23+10*nf, *) x1_br(i,nf), y1_br(i,nf)
 c      end do
@@ -179,7 +181,7 @@ c Built triangles of bright stars.
 
       call build_triangles (x1_br(1,nf), y1_br(1,nf), n1_br(nf),
      $  tr1_r, tr1_i, n1_tr, max_dist)
-c      write (6, *) n1_tr, ' triangles.'
+      write (6, *) n1_tr, ' triangles.'
 
 c Gets name of other catalogs.
 

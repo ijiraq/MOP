@@ -36,7 +36,7 @@ task = "mk_mopheader"
 dependency = 'update_header'
 
 
-def run(expnum, ccd, version, dry_run=False, prefix="", force=False, ignore_dependency=False):
+def run(expnum, ccd, version, dry_run=False, prefix="", force=False, ignore_dependency=False, ext_no=1):
     """Run the OSSOS mopheader script.
 
     """
@@ -66,7 +66,7 @@ def run(expnum, ccd, version, dry_run=False, prefix="", force=False, ignore_depe
             expname = os.path.basename(filename).split('.')[0]
             logging.info(util.exec_prog(['stepZjmp',
                                          '-f',
-                                         expname]))
+                                         expname, '-e', ext_no]))
             # if this is a dry run then we are finished
             if dry_run:
                 return message
@@ -110,6 +110,7 @@ def main():
                         dest='ccd',
                         default=None,
                         help='which ccd to process, default is all')
+    parser.add_argument('--ext-no', type=int, default=1, help='Which extension holds the image')
     parser.add_argument('--ignore-update-headers', action='store_true', dest='ignore_update_headers')
     parser.add_argument("--dbimages",
                         action="store",
@@ -151,7 +152,8 @@ def main():
     exit_code = 0
     for expnum in args.expnum:
         for ccd in ccdlist:
-            run(expnum, ccd, args.type, args.dry_run, prefix=prefix, force=args.force, ignore_dependency=args.ignore_update_headers)
+            run(expnum, ccd, args.type, args.dry_run, prefix=prefix, force=args.force, ignore_dependency=args.ignore_update_headers,
+                    ext_no=args.ext_no)
 
 
 if __name__ == '__main__':

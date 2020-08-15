@@ -5,25 +5,25 @@ C When actually using g77, add the option -fno-automatic
 
       include 'match-mov.h'
 
-      integer*4
-     $  image_size_max
+      integer
+     $     image_size_max
 
       parameter
-     $  (image_size_max = 2048*1100)
+     $     (image_size_max = 2048*1100)
 
-      integer*4
-     $  i, i1, i2, naxis1, naxis2, lun_i, lun_o, narg, iargc,
-     $  j, lun_h
+      integer
+     $     i, i1, i2, naxis1, naxis2, lun_i, lun_o, narg, iargc,
+     $     j, lun_h, ext
 
       character
-     $  image_name*80, base_name*80, arg*80,
-     $  line*80, head_name*80
+     $     image_name*80, base_name*80, arg*80,
+     $     line*80, head_name*80
+
 
       logical
-     $  finished, help, no_f
+     $     finished, help, no_f
 
-
-c Create a file for later error handling
+c     Create a file for later error handling
 
       open (unit=1, file='stepZjmp.FAILED', status='unknown')
       write (1, *) ' '
@@ -38,7 +38,7 @@ c Get input parameters
       narg = iargc()
       i = 1
       no_f = .true.
-      help = (narg .ne. 2)
+      help = ((narg .ne. 2) .and. (narg .ne. 4))
 
  90   continue
       if (i .le. narg) then
@@ -50,6 +50,10 @@ c Get input parameters
          else if ((arg(1:2) .eq. '-h') .or. (arg(1:2) .eq. '-?')) then
             i = narg + 1
             help = .true.
+         else if (arg(1:2) .eq. '-e') then
+            i = i + 1
+            call getarg(i, arg)
+            read (arg, *) ext
          end if
          i = i + 1
          goto 90
@@ -65,7 +69,7 @@ c Get input parameters
          j = j + 1
       end do
       write (6, *) line(1:j-1)
-
+      write (6, *) ext
       open (unit=1, file='stepZjmp.FAILED', status='unknown')
       write (1, *) line(1:j-1)
       close (1)
@@ -77,6 +81,7 @@ c Get input parameters
      $     'Usage: stepZjmp -f <image file>'
          write (6, *) 'where:'
          write (6, *) '-f <image file>: image to process (no extension)'
+         write (6, *) '-e <ext>: fits extension with image header'
          stop
       end if
 
@@ -90,16 +95,13 @@ c Get input parameters
       lun_i = 20
       lun_h = 22
 
-c Open image file and find geometry informations
+c     Open image file and find geometry informations
+      call open_image (image_name, lun_i, naxis1, naxis2, ext)
 
-      call open_image (image_name, lun_i, naxis1, naxis2)
-
-c Reads in the header keywords, and stores them in header file.
-
+c     Reads in the header keywords, and stores them in header file.
       call create_header (lun_i, naxis1, naxis2, head_name, lun_h)
 
-c Close files.
-
+c     Close files.
       call close_image (lun_i)
 
 c Apparently things went right

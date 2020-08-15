@@ -9,32 +9,63 @@ c-------------------------------------------------------------------
 
       integer*4
      $  status, lun_i, naxis1, naxis2, lun_h, expnum, chipnum,
-     $  i1, i2, i
+     $  i1, i2, i, hdutype
 
       real*8
-     $  crpix1, crval1, crpix2, crval2, exptime, x1, x2, y1, y2,
-     $  mjd_obs, pixscale, cdelt1, cdelt2, phpadu, rdnoise, hh, mm, ss
+     $     crpix1, crval1, crpix2, crval2, exptime, x1, x2, y1, y2,
+     $     mjd_obs, pixscale, cdelt1, cdelt2, phpadu, rdnoise, hh,
+     $     mm, ss, mjd_str, mjd_end
+      
 
       character
-     $  comment*80, ras*19, decs*19, string*19, detect*20, line*80,
-     $  ut_start*20, telesc*20, ccdsum*8, detsec*40, head_name*80
+     $     comment*80, ras*19, decs*19, string*19, detect*80, line*80,
+     $     ut_start*20, telesc*20, ccdsum*8, detsec*40, head_name*80,
+     $     frameid*80
 
       if (lun_h .le. 0) stop
 
       open (unit=lun_h, file=head_name, status='unknown',
-     $  form='unformatted', access='direct', recl=80, err=1000)
+     $     form='unformatted', access='direct', recl=80, err=1000)
 
-c Reads header keywords.
+      status = 0
 
-      call ftgrec (lun_i, 0, comment, status)
+C     Start in the primary header
+      call FTMAHD (lun_i, 1, hdutype, status)
       call ftgkys (lun_i, 'INSTRUME', detect, comment, status)
+      write (6,'(a)') "Detector:", detect
       if (status .gt. 0) then
+         CALL prt_status_message(status)
          status = 0
          call ftgrec (lun_i, 0, comment, status)
          call ftgkys (lun_i, 'DETECTOR', detect, comment, status)
       end if
-      write (6,'(a)') detect
-      if (detect(1:7) .eq. 'CFH12K ') then
+
+      write (6,'(a)') "Detector:", detect
+
+      if (detect(1:5) .eq. 'Hyper') then
+C     Get the timing values from the PRIMARY header (1)
+         call ftmahd (lun_i, 1, hdutype, status)
+         call ftgkyd (lun_i, 'T_GAIN1', phpadu, comment, status)
+         call ftgkyd (lun_i, 'MJD-STR', mjd_str, comment, status)
+         call ftgkyd (lun_i, 'MJD-END', mjd_end, comment, status)
+         mjd_obs = (mjd_end + mjd_str)/2.0
+         call ftgkyd (lun_i, 'EXPTIME', exptime, comment, status)
+         call ftgkyj (lun_i, 'DETSER', chipnum, comment, status)
+         call ftgkys (lun_i, 'FRAMEID', frameid, comment, status)
+         read (FRAMEID(5:10), *) expnum 
+         if ( 2*int(expnum/2.0) < expnum ) then
+            expnum = expnum - 1
+         end if
+C     Get the position information from the IMAGE header (2)
+         call ftmahd (lun_i, 2, hdutype, status)
+         call ftgkyd (lun_i, 'CRVAL1', crval1, comment, status)
+         call ftgkyd (lun_i, 'CRVAL2', crval2, comment, status)
+         call ftgkyd (lun_i, 'CRPIX1', crpix1, comment, status)
+         call ftgkyd (lun_i, 'CRPIX2', crpix2, comment, status)
+         pixscale = 4.67145360453334E-05 *3600.0
+         rdnoise = 2
+
+      elseif (detect(1:7) .eq. 'CFH12K ') then
 
 c This is CFH12K on CFHT
 
@@ -577,8 +608,9 @@ c Fills in with blanks.
       end do
       line(1:3) = 'END'
       write (lun_h, rec=36) line
+      write (lun_h, rec=36) ' '
 
-c Now writes keywords.
+c     Now writes keywords.
 
       line(1:30) = 'SIMPLE  =                    T'
       write (lun_h, rec=1) line
@@ -645,6 +677,23 @@ c Now writes keywords.
       stop 'Exiting.'
 
       end
+
+
+      SUBROUTINE prt_status_message(status)
+      
+      INTEGER status
+      CHARACTER*80 title
+      
+      call ftgerr (status, title)
+      write (6,*) 'FITSIO Header ERROR =', status, ': ', title
+      call ftgmsg (title)
+      do while (title .ne. ' ')
+         write (6,*) title
+         call ftgmsg (title)
+      end do
+      return
+
+      END
 
       SUBROUTINE  hms(str,val)
 c
