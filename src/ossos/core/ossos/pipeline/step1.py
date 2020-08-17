@@ -76,7 +76,7 @@ def run(expnum,
         wave_thresh=_WAVE_THRESHOLD,
         maxcount=_MAX_COUNT,
         dry_run=False,
-        force=True):
+        force=True, img_ext=0, var_ext=None, ignore=False):
     """run the actual step1jmp/matt codes.
 
     expnum: the CFHT expousre to process
@@ -95,7 +95,7 @@ def run(expnum,
 
     with storage.LoggingManager(task, prefix, expnum, ccd, version, dry_run):
         try:
-            if not storage.get_status(dependency, prefix, expnum, version, ccd):
+            if not storage.get_status(dependency, prefix, expnum, version, ccd) and not ignore:
                 raise IOError(35, "Cannot start {} as {} not yet completed for {}{}{}{:02d}".format(
                     task, dependency, prefix, expnum, version, ccd))
             logging.info("Retrieving imaging and input parameters from VOSpace")
@@ -104,20 +104,30 @@ def run(expnum,
             fwhm = storage.get_fwhm(expnum, ccd, prefix=prefix, version=version)
             basename = os.path.splitext(filename)[0]
 
-            _get_weight_map(filename, ccd)
+            if var_ext is None:
+                _get_weight_map(filename, ccd)
 
             logging.info("Launching step1jmp")
-            logging.info(util.exec_prog(['step1jmp',
+            step1jmp_cmd = ['step1jmp',
                                          '-f', basename,
                                          '-t', str(wave_thresh),
                                          '-w', str(fwhm),
-                                         '-m', str(maxcount)]))
+                                         '-m', str(maxcount)]
+            if var_ext is not None:
+                step1jmp_cmd.append('-v')
+                step1jmp_cmd.append(str(var_ext))
 
-            logging.info(util.exec_prog(['step1matt',
-                                         '-f', basename,
-                                         '-t', str(sex_thresh),
-                                         '-w', str(fwhm),
-                                         '-m', str(maxcount)]))
+            logging.info(util.exec_prog(step1jmp_cmd))
+            step1matt_cmd = ['step1matt',
+                             '-f', basename,
+                             '-t', str(sex_thresh),
+                             '-w', str(fwhm),
+                             '-m', str(maxcount)]
+            if var_ext is not None:
+                step1matt_cmd.append('-v')
+                step1matt_cmd.append(str(var_ext))
+                
+            logging.info(util.exec_prog(step1matt_cmd))
 
             if os.access('weight.fits', os.R_OK):
                 os.unlink('weight.fits')
@@ -158,6 +168,8 @@ def main():
                         default=None,
                         type=int,
                         dest="ccd")
+    parser.add_argument("--img-ext", default=1, type=int, help="FORTRAN based ext with IMAGE")
+    parser.add_argument("--var-ext", default=None, type=int, help="FORRAN based ext with VARIANCE map")
     parser.add_argument("--ignore", help="Try to run even in previous step failed.",
                         default=False,
                         action="store_true")
@@ -223,7 +235,8 @@ def main():
                 sex_thresh=args.sex_thresh,
                 wave_thresh=args.wavelet_thresh,
                 dry_run=args.dry_run,
-                force=args.force)
+                force=args.force, img_ext=args.img_ext, var_ext=args.var_ext,
+                ignore=args.ignore)
 
 
 if __name__ == '__main__':
