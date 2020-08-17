@@ -19,14 +19,15 @@ close(FAILED);
 print STDERR "step1matt @ARGV\n";
 
 use Getopt::Long;
-GetOptions('f|file:s','t:f','w:f','m:f','h|help');
+GetOptions('f|file:s','t:f','w:f','m:f', 'v:i', 'h|help');
 
-# -f image_file (w/o .fits extension) -w fwhm -t detection threshold (1.3) -m maxcount (30000) -h/? help line
+# -f image_file (w/o .fits extension) -w fwhm -t detection threshold (1.3) -m maxcount (30000) [-v 3] -h/? help line
 
 $im = $opt_f;
 $thresh = $opt_t;
 $fwhm = $opt_w;
 $maxcount = $opt_m;
+$var_ext = $opt_v;
 
 if($opt_f eq ""){
     print "All arguments must be specified.\n"."usage: step1matt -f im_name -w fwhm -t threshold -m maxcount.\n";
@@ -111,8 +112,16 @@ printf OUTFILE "# %6.3f%4d%10.2f%10.2f%6d%6d %-19s%5.2f %5.2f\n",
 print OUTFILE "##   X       Y        FLUX     SIZE MAX_INT  ELON   X^2\n";
 
 close(OUTFILE);
+$weight_image = "weight.fits";
+$weight_type = "MAP_WEIGHT";
+if ($var_ext != 0) {
+    $fitsfile = sprintf("%s.fits[%d]", $im, 1);
+    $weight_image = sprintf("%s.fits[%d]", $im, $var_ext);
+    $weight_type = "MAP_VAR";
+}
 
-`$sextractor -c $configfile $fitsfile -DETECT_THRESH $thresh -ANALYSIS_THRESH $thresh -SATUR_LEVEL $maxcount -CATALOG_NAME $catfile`;
+# print("$sextractor -c $configfile $fitsfile -DETECT_THRESH $thresh -ANALYSIS_THRESH $thresh -WEIGHT_TYPE $weight_type -WEIGHT_IMAGE $weight_image -SATUR_LEVEL $maxcount -CATALOG_NAME $catfile");
+`$sextractor -c $configfile $fitsfile -DETECT_THRESH $thresh -ANALYSIS_THRESH $thresh -WEIGHT_TYPE $weight_type -WEIGHT_IMAGE $weight_image -SATUR_LEVEL $maxcount -CATALOG_NAME $catfile`;
 
 $obs_cons = 0.2; 
 $p_min = 100.0;
