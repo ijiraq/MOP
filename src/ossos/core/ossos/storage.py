@@ -101,13 +101,16 @@ class MyRequests(object):
 requests = MyRequests()
 
 
-def get_ccdlist(expnum):
-    if int(expnum) < 1785619:
-        # Last exposures with 36 CCD Megaprime
-        ccdlist = list(range(0, 36))
-    else:
-        # First exposrues with 40 CCD Megaprime
-        ccdlist = list(range(0, 40))
+def get_ccdlist(expnum, camera='MEGAPRIME'):
+    if camera == 'MEGAPRIME':
+        if int(expnum) < 1785619:
+            # Last exposures with 36 CCD Megaprime
+            ccdlist = list(range(0, 36))
+        else:
+            # First exposrues with 40 CCD Megaprime
+            ccdlist = list(range(0, 40))
+    else if camera == 'HSC':
+        ccdlist = list(rang(0,104))
     return ccdlist
 
 
