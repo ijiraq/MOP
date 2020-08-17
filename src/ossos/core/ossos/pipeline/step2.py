@@ -38,7 +38,7 @@ task = util.task()
 dependency = "step1"
 
 
-def compute_trans(expnums, ccd, version, prefix=None, default="WCS"):
+def compute_trans(expnums, ccd, version, prefix=None, default="WCS", img_ext=0):
     """
     Pull the astrometric header for each image, compute an x/y transform and compare to trans.jmp
 
@@ -56,7 +56,7 @@ def compute_trans(expnums, ccd, version, prefix=None, default="WCS"):
             # TODO This assumes that the image is already N/E flipped.
             # If compute_trans is called after the image is retrieved from archive then we get the disk version.
             filename = storage.get_image(expnum, ccd, version, prefix=prefix)
-            this_wcs = wcs.WCS(fits.open(filename)[0].header)
+            this_wcs = wcs.WCS(fits.open(filename)[img_ext].header)
         except Exception as err:
             logging.warning("WCS Trans compute failed. {}".format(str(err)))
             return
@@ -89,7 +89,7 @@ def compute_trans(expnums, ccd, version, prefix=None, default="WCS"):
     return result
 
 
-def run(expnums, ccd, version, prefix=None, dry_run=False, default="WCS", force=False):
+def run(expnums, ccd, version, prefix=None, dry_run=False, default="WCS", force=False, img_ext=0):
     """run the actual step2  on the given exp/ccd combo"""
 
     jmp_trans = ['step2ajmp']
@@ -129,10 +129,10 @@ def run(expnums, ccd, version, prefix=None, dry_run=False, default="WCS", force=
                 logging.info(util.exec_prog(jmp_trans))
                 if default == "WCS":
                     logging.info("Comparing computed transform to WCS values")
-                    logging.info(compute_trans(expnums, ccd, version, prefix, default=default))
+                    logging.info(compute_trans(expnums, ccd, version, prefix, default=default, img_ext=img_ext))
             except Exception as ex:
                 logging.info("JMP Trans failed: {}".format(ex))
-                logging.info(compute_trans(expnums, ccd, version, prefix, default="WCS"))
+                logging.info(compute_trans(expnums, ccd, version, prefix, default="WCS", img_ext=img_ext))
 
             logging.info("Using transform to match catalogs for three images.")
             logging.info(util.exec_prog(jmp_args))
@@ -196,6 +196,7 @@ def main():
                         default=None,
                         type=int,
                         dest="ccd")
+    parser.add_argument("--img-ext", default=0, type=int, help="Which FITS extension holds the image")
     parser.add_argument("--fk", action="store_true", default=False, help="Do fakes?")
     parser.add_argument("--dbimages",
                         action="store",
@@ -250,7 +251,9 @@ def main():
         args.expnums.sort()
 
     for ccd in ccdlist:
-        run(args.expnums, ccd, version=version, prefix=prefix, dry_run=args.dry_run, default=args.default, force=args.force)
+        run(args.expnums, ccd, version=version,
+            prefix=prefix, dry_run=args.dry_run, default=args.default, force=args.force,
+            img_ext=args.img_ext)
 
 
 if __name__ == '__main__':
