@@ -96,6 +96,8 @@ C     not the primary, otherwise, asssume its the primary.
       if (var_ext .eq. 0) then
          img_ext = 1
       else
+C     These are the values fitsio wants (fortran vs c)
+         var_ext = var_ext + 1
          img_ext = 2
       end if
       
@@ -126,6 +128,7 @@ C     not the primary, otherwise, asssume its the primary.
          write (6, *) '-t <threshold>: detection threshold'
          write (6, *) '-m <maxcount>: maximum pixel value allowed'
          write (6, *) '-v <ext>: variance extension in <image file>'
+         write (6, *) '   --- variance is optional, implies image ext=1'
          stop
       end if
 
@@ -215,23 +218,6 @@ c Detect objects
      $     size_obj, moments, sfl, max_int, n_obj, nx, ny, sky,
      $        n_obj_max, max_el, echelle, echelle_c, .true.)
 
-         if (i_seg .eq. 3) then
-            do i = 2192 - y_offset-5, 2192 - y_offset+5
-               do j = 1385 -5 , 1385 +5
-                  write (6,*) j, i, tmp1(i*nx+ j)
-                  write (6,*) 1395, 2194 - y_offset + 1, tmp1(i*nx+j)
-                  if ( tmp1(i*nx+j) .gt. 0.0 ) then
-                     test_n = int(tmp1(i*nx+j))
-                  end if
-               end do
-            end do
-            write (6, *) n_obj, test_n
-            n = test_n
-            write (6,*) moments(1,n), moments(2,n), size_obj(n),
-     $           max_int(n),
-     $           moments(6, n), moments(7, n)
-         end if
-
 c Get rid of objects in extrem half of overlap strip
 
          if (i_seg .lt. n_seg) then
@@ -252,14 +238,6 @@ c Write objects in file
 
          i = 0
          do n = 1, n_obj
-            if ( n .eq. test_n ) then
-               write (6, *) n, (size_obj(n) .gt. 0),
-     $              (max_int(n) .gt. 0.)
-               write (6, 9000) moments(1,n), moments(2,n),
-     $           moments(6,n), float(size_obj(n)), max_int(n),
-     $           moments(5,n), moments(3,n), moments(4,n), moments(7,n),
-     $           sfl(n)
-            end if
             if ((size_obj(n) .gt. 0) .and. (max_int(n) .gt. 0.)
 C     $           .and.
 C     $           ((var_ext  .ne. 0 ) .or.
