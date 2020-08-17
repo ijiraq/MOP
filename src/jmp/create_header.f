@@ -32,7 +32,6 @@ c-------------------------------------------------------------------
 C     Start in the primary header
       call FTMAHD (lun_i, 1, hdutype, status)
       call ftgkys (lun_i, 'INSTRUME', detect, comment, status)
-      write (6,'(a)') "Detector:", detect
       if (status .gt. 0) then
          CALL prt_status_message(status)
          status = 0
@@ -40,9 +39,9 @@ C     Start in the primary header
          call ftgkys (lun_i, 'DETECTOR', detect, comment, status)
       end if
 
-      write (6,'(a)') "Detector:", detect
 
       if (detect(1:5) .eq. 'Hyper') then
+         detect = 'HSC'
 C     Get the timing values from the PRIMARY header (1)
          call ftmahd (lun_i, 1, hdutype, status)
          call ftgkyd (lun_i, 'T_GAIN1', phpadu, comment, status)
@@ -50,12 +49,8 @@ C     Get the timing values from the PRIMARY header (1)
          call ftgkyd (lun_i, 'MJD-END', mjd_end, comment, status)
          mjd_obs = (mjd_end + mjd_str)/2.0
          call ftgkyd (lun_i, 'EXPTIME', exptime, comment, status)
-         call ftgkyj (lun_i, 'DETSER', chipnum, comment, status)
-         call ftgkys (lun_i, 'FRAMEID', frameid, comment, status)
-         read (FRAMEID(5:10), *) expnum 
-         if ( 2*int(expnum/2.0) < expnum ) then
-            expnum = expnum - 1
-         end if
+         call ftgkyj (lun_i, 'CCD', chipnum, comment, status)
+         call ftgkyj (lun_i, 'EXPNUM', expnum, comment, status)
 C     Get the position information from the IMAGE header (2)
          call ftmahd (lun_i, 2, hdutype, status)
          call ftgkyd (lun_i, 'CRVAL1', crval1, comment, status)
@@ -137,7 +132,6 @@ c This is MegaPrime on CFHT
 
          call ftgrec (lun_i, 0, comment, status)
          call ftgkyd (lun_i, 'MJD-OBS', mjd_obs, comment, status)
-         write (6, *) mjd_obs
 
          call ftgrec (lun_i, 0, comment, status)
          call ftgkyd (lun_i, 'EXPTIME', exptime, comment, status)
@@ -608,7 +602,6 @@ c Fills in with blanks.
       end do
       line(1:3) = 'END'
       write (lun_h, rec=36) line
-      write (lun_h, rec=36) ' '
 
 c     Now writes keywords.
 
