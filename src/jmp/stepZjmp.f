@@ -54,6 +54,8 @@ c Get input parameters
             i = i + 1
             call getarg(i, arg)
             read (arg, *) ext
+C     accept the C based value but use as FORTRAN
+            ext = ext + 1
          end if
          i = i + 1
          goto 90
