@@ -101,8 +101,8 @@ class WCS(astropy_wcs.WCS):
                 logger.warning("Error {} {}".format(type(ex), ex))
                 logger.warning("Reverted to CD-Matrix WCS.")
                 print(ex)
-        xy = numpy.array([x, y]).transpose()
-        pos = self.wcs_pix2world(xy, 1).transpose()
+        pos = self.wcs_pix2world(x,y, 1)
+        logger.debug(f'{x},{y} --> {pos}')
         return pos[0] * units.degree, pos[1] * units.degree
 
     def sky2xy(self, ra, dec, usepv=True):
@@ -125,8 +125,9 @@ class WCS(astropy_wcs.WCS):
             logger.warning("sky2xy raised exception: {0}".format(ex))
             logger.warning("Reverted to CD-Matrix WCS to convert: {0} {1} ".format(ra, dec))
             print(ex)
-        pos = self.wcs_world2pix([[ra, dec], ], 1)
-        return pos[0][0], pos[0][1]
+        pos = self.wcs_world2pix(ra, dec, 1)
+        logger.debug(f'{ra},{dec} --> {pos}')
+        return pos[0], pos[1]
 
 
 def sky2xypv(ra, dec, crpix1, crpix2, crval1, crval2, dc, pv, nord, maxiter=300):
