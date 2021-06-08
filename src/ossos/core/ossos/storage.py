@@ -109,7 +109,7 @@ def get_ccdlist(expnum, camera='MEGAPRIME'):
         else:
             # First exposrues with 40 CCD Megaprime
             ccdlist = list(range(0, 40))
-    else if camera == 'HSC':
+    elif camera == 'HSC':
         ccdlist = list(rang(0,104))
     return ccdlist
 
@@ -922,6 +922,9 @@ def get_image(expnum, ccd=None, version='p', ext=FITS_EXT,
         except Exception as e:
             logger.error(str(e))
             pass
+        if version == 'p':
+            locations.append((get_uri(expnum, ccd, version, ext=ext, subdir=subdir, prefix=prefix), 
+                cutout))
     else:
         uri = get_uri(expnum, ccd, version, ext=ext, subdir=subdir, prefix=prefix)
         locations.append((uri, cutout))

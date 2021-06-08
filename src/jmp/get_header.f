@@ -26,7 +26,8 @@ c-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
       implicit none
 
       integer*4
-     $  lun_o, naxis1, naxis2, lun_h, expnum, chipnum, istat
+     $     lun_o, naxis1, naxis2, lun_h, expnum, chipnum, istat,
+     $     rwmode, status, naxis
 
       real*4
      $  thresh, echelle, maxcount, mopvers
@@ -36,48 +37,49 @@ c-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
      $  mjd_obs, pixscale, phpadu, rdnoise
 
       character
-     $  detect*20, line*80, head_name*80
+     $  detect*20, line*80, head_name*80, comment*80
 
       if (lun_h .le. 0) stop
 
-      open (unit=lun_h, file=head_name, status='old',
-     $  form='unformatted', access='direct', recl=80, err=1000)
-
-c Reads header keywords.
-
-      read (lun_h, rec=5) line
-      read (line(11:30), '(i20)') expnum
-      read (lun_h, rec=6) line
-      read (line(11:30), '(i20)') chipnum
-
-      read (lun_h, rec=7) line
-      read (line(11:30), '(f20.7)') mjd_obs
-      read (lun_h, rec=8) line
-      read (line(11:30), '(f20.2)') exptime
-      read (lun_h, rec=9) line
-      read (line(11:30), '(f20.5)') crval1
-      read (lun_h, rec=10) line
-      read (line(11:30), '(f20.5)') crval2
-      read (lun_h, rec=11) line
-      read (line(11:30), '(f20.2)') crpix1
-      read (lun_h, rec=12) line
-      read (line(11:30), '(f20.2)') crpix2
-      read (lun_h, rec=13) line
-      read (line(11:30), '(f20.3)') pixscale
-      read (lun_h, rec=14) line
-      read (line(11:30), '(i20)') naxis1
-      read (lun_h, rec=15) line
-      read (line(11:30), '(i20)') naxis2
-      read (lun_h, rec=16) line
-      read (line(12:30), '(a19)') detect
-      read (lun_h, rec=17) line
-      read (line(11:30), '(f20.2)') phpadu
-      read (lun_h, rec=18) line
-      read (line(11:30), '(f20.2)') rdnoise
-      read (lun_h, rec=19) line
-      read (line(11:30), '(f20.2)') mopvers
-
-      close (lun_h)
+      write (6, *) 'Reading the header '//head_name
+      rwmode = 0
+      status = 0
+c     Reads header keywords.
+      call ftnopn(lun_h, head_name, rwmode, status)
+      write (6,*) status
+      call ftgkyj(lun_h, 'EXPNUM', expnum, comment, status)
+      write (6,*) status
+      call ftgkyj(lun_h, 'CHIPNUM', chipnum, comment, status)
+      write (6,*) status
+      call ftgkyd(lun_h, 'MJD-OBSC', mjd_obs, comment, status)
+      write (6,*) status
+      call ftgkyd(lun_h, 'EXPTIME', exptime, comment, status)
+      write (6,*) status
+      call ftgkyd(lun_h, 'CRVAL1', crval1, comment, status)
+      write (6,*) status
+      call ftgkyd(lun_h, 'CRVAL2', crval2, comment, status)
+      write (6,*) status
+      call ftgkyd(lun_h, 'CRPIX1', crpix1, comment, status)
+      write (6,*) status
+      call ftgkyd(lun_h, 'CRPIX2', crpix2, comment, status)
+      write (6,*) status
+      call ftgkyd(lun_h, 'PIXSCALE', pixscale, comment, status)
+      write (6,*) status
+      call ftgkyj(lun_h, 'ONAXIS', naxis, comment, status)
+      write (6,*) status
+      call ftgkyj(lun_h, 'ONAXIS1', naxis1, comment, status)
+      write (6,*) status
+      call ftgkyj(lun_h, 'ONAXIS2', naxis2, comment, status)
+      write (6,*) status
+      call ftgkys(lun_h, 'DETECTOR', detect, comment, status)
+      write (6,*) status
+      call ftgkyd(lun_h, 'PHPADU', phpadu, comment, status)
+      write (6,*) status
+      call ftgkyd(lun_h, 'RDNOISE', rdnoise, comment, status)
+      write (6,*) status
+      call ftgkye(lun_h, 'MOP_VER', mopvers, comment, status)
+      write (6,*) status
+      call ftclos(lun_h, status)
 
       call check_version (mopvers, head_name, 80, istat)
 

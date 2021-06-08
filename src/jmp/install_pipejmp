@@ -29,7 +29,7 @@ if [ "$fcexists" -eq "0" ]; then
   $FC -o $BINDIRA/step2ajmpl $FFLAGS step2ajmpl.f -L$LIBDIRA -ljmp 
   $FC -o $BINDIRA/step2ajmps step2ajmps.f -L$LIBDIRA -ljmp 
   $FC -o $BINDIRA/step2bjmp step2bjmp.f -L$LIBDIRA -ljmp 
-  $FC -o $BINDIRA/step3jmp step3jmp.f -L$LIBDIRA -ljmp 
+  $FC -o $BINDIRA/step3jmp $FFLAGS step3jmp.f -L$LIBDIRA -ljmp  -lcfitsio -fPIC
   $FC -o $BINDIRA/comb-list comb-list.f -L$LIBDIRA -ljmp
   $FC -o $BINDIRA/pipe-eff pipe-eff.f -L$LIBDIRA -ljmp 
   $FC -o $BINDIRA/recover recover.f -L$LIBDIRA -ljmp

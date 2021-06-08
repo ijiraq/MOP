@@ -8,13 +8,13 @@ c-------------------------------------------------------------------
       include 'MOP_version.inc'
 
       integer*4
-     $  status, lun_i, naxis1, naxis2, lun_h, expnum, chipnum,
-     $  i1, i2, i, hdutype
+     $  status, lun_i, naxis1, naxis2, lun_h, chipnum, bitpix,
+     $  i1, i2, i, hdutype, expnum, blocksize, naxis, naxes(2)
 
       real*8
      $     crpix1, crval1, crpix2, crval2, exptime, x1, x2, y1, y2,
      $     mjd_obs, pixscale, cdelt1, cdelt2, phpadu, rdnoise, hh,
-     $     mm, ss, mjd_str, mjd_end
+     $     mm, ss, mjd_str, mjd_end, cd11, cd12, cd21, cd22
       
 
       character
@@ -23,9 +23,6 @@ c-------------------------------------------------------------------
      $     frameid*80
 
       if (lun_h .le. 0) stop
-
-      open (unit=lun_h, file=head_name, status='unknown',
-     $     form='unformatted', access='direct', recl=80, err=1000)
 
       status = 0
 
@@ -39,6 +36,10 @@ C     Start in the primary header
          call ftgkys (lun_i, 'DETECTOR', detect, comment, status)
       end if
 
+      cd11 = 1
+      cd12 = 0
+      cd21 = 0
+      cd22 = 1
 
       if (detect(1:5) .eq. 'Hyper') then
          detect = 'HSC'
@@ -49,16 +50,22 @@ C     Get the timing values from the PRIMARY header (1)
          call ftgkyd (lun_i, 'MJD-END', mjd_end, comment, status)
          mjd_obs = (mjd_end + mjd_str)/2.0
          call ftgkyd (lun_i, 'EXPTIME', exptime, comment, status)
-         call ftgkyj (lun_i, 'CCD', chipnum, comment, status)
-         call ftgkyj (lun_i, 'EXPNUM', expnum, comment, status)
+         call ftgkyj (lun_i, 'CCDNUM', chipnum, comment, status)
+         call ftgkys (lun_i, 'EXPNUM', frameid, comment, status)
+         read (frameid(4:), *) expnum
 C     Get the position information from the IMAGE header (2)
          call ftmahd (lun_i, 2, hdutype, status)
          call ftgkyd (lun_i, 'CRVAL1', crval1, comment, status)
          call ftgkyd (lun_i, 'CRVAL2', crval2, comment, status)
          call ftgkyd (lun_i, 'CRPIX1', crpix1, comment, status)
          call ftgkyd (lun_i, 'CRPIX2', crpix2, comment, status)
+         call ftgkyd (lun_i, 'CD1_1', cd11, comment, status)
+         call ftgkyd (lun_i, 'CD1_2', cd12, comment, status)
+         call ftgkyd (lun_i, 'CD2_1', cd21, comment, status)
+         call ftgkyd (lun_i, 'CD2_2', cd22, comment, status)
          pixscale = 4.67145360453334E-05 *3600.0
          rdnoise = 2
+         print *, head_name, blocksize, status
 
       elseif (detect(1:7) .eq. 'CFH12K ') then
 
@@ -595,73 +602,52 @@ c This LX200
 
 c Fills in with blanks.
 
-      line(31:80) = '                                                  '
-      line(1:31) = '                               '
-      do i = 1, 35
-         write (lun_h, rec=i) line
-      end do
-      line(1:3) = 'END'
-      write (lun_h, rec=36) line
+      open(unit=lun_h, iostat=status, file=head_name, status='old')
+      if (status == 0) close(lun_h, status='delete')     
 
-c     Now writes keywords.
+      write (6,*) "Attempting to open FITS file"
+      status = 0
+      blocksize = 1
+      CALL ftinit(lun_h, head_name, blocksize, status)
+      if ( status .gt. 0) then
+         goto 1000
+      end if
 
-      line(1:30) = 'SIMPLE  =                    T'
-      write (lun_h, rec=1) line
-      line(1:30) = 'BITPIX  =                   16'
-      write (lun_h, rec=2) line
-      line(1:30) = 'NAXIS   =                    0'
-      write (lun_h, rec=3) line
-      line(1:30) = 'EXTEND  =                    F'
-      write (lun_h, rec=4) line
-      line(1:10) = 'EXPNUM  = '
-      write (line(11:30), '(i20)') expnum
-      write (lun_h, rec=5) line
-      line(1:10) = 'CHIPNUM = '
-      write (line(11:30), '(i20)') chipnum
-      write (lun_h, rec=6) line
-      line(1:10) = 'MJD-OBSC= '
-      write (line(11:30), '(f20.7)') mjd_obs + exptime
-     $  /(2.d0*24.d0*3600.d0)
-      write (lun_h, rec=7) line
-      line(1:10) = 'EXPTIME = '
-      write (line(11:30), '(f20.2)') exptime
-      write (lun_h, rec=8) line
-      line(1:10) = 'CRVAL1  = '
-      write (line(11:30), '(f20.5)') crval1
-      write (lun_h, rec=9) line
-      line(1:10) = 'CRVAL2  = '
-      write (line(11:30), '(f20.5)') crval2
-      write (lun_h, rec=10) line
-      line(1:10) = 'CRPIX1  = '
-      write (line(11:30), '(f20.2)') crpix1
-      write (lun_h, rec=11) line
-      line(1:10) = 'CRPIX2  = '
-      write (line(11:30), '(f20.2)') crpix2
-      write (lun_h, rec=12) line
-      line(1:10) = 'PIXSCALE= '
-      write (line(11:30), '(f20.3)') pixscale
-      write (lun_h, rec=13) line
-      line(1:10) = 'NAXIS1  = '
-      write (line(11:30), '(i20)') naxis1
-      write (lun_h, rec=14) line
-      line(1:10) = 'NAXIS2  = '
-      write (line(11:30), '(i20)') naxis2
-      write (lun_h, rec=15) line
-      line(1:10) = 'DETECTOR= '
-      write (line(11:31), '(a21)') ''''//detect(1:19)//''''
-      write (lun_h, rec=16) line
-      line(31:31) = ' '
-      line(1:10) = 'PHPADU  = '
-      write (line(11:30), '(f20.2)') phpadu
-      write (lun_h, rec=17) line
-      line(1:10) = 'RDNOISE = '
-      write (line(11:30), '(f20.2)') rdnoise
-      write (lun_h, rec=18) line
-      line(1:10) = 'MOP_VER = '
-      write (line(11:30), '(f20.2)') MOP_version
-      write (lun_h, rec=19) line
 
-      close (lun_h)
+      write (6,*) 'Writing content to file'
+      
+
+      naxis=0
+      naxes(1)=0
+      naxes(2)=0
+      bitpix=16
+      call ftphps (lun_h, bitpix, naxis, naxes, status)
+      call ftpkyj(lun_h, 'EXPNUM', expnum, 'IMAGE IDENTIFIER', status)
+      call ftpkyj(lun_h, 'CHIPNUM', chipnum, 'CCD IDENTIFIER', status)
+      mjd_obs = mjd_obs+exptime/(2.d0*24.d0*3600.d0)
+      call ftpkyd(lun_h, 'MJD-OBSC', mjd_obs, -10, 'MJD MID EXP', 
+     $       status)
+      call ftpkyd(lun_h, 'EXPTIME', exptime, -2, 'OPEN TIME', status)
+      comment = '' 
+      call ftpkyd(lun_h, 'CRVAL1', crval1, -9, comment, status)
+      call ftpkyd(lun_h, 'CRVAL2', crval2, -9, comment, status)
+      call ftpkyd(lun_h, 'CRPIX1', crpix1, -6, comment, status)
+      call ftpkyd(lun_h, 'CRPIX2', crpix2, -6, comment, status)
+      call ftpkyd(lun_h, 'CD1_1', cd11, 5, comment, status)
+      call ftpkyd(lun_h, 'CD1_2', cd12, 5, comment, status)
+      call ftpkyd(lun_h, 'CD2_1', cd21, 5, comment, status)
+      call ftpkyd(lun_h, 'CD2_2', cd22, 5, comment, status)
+      call ftpkyd(lun_h, 'PIXSCALE', pixscale, -3, comment, status)
+      call ftpkyj(lun_h, 'ONAXIS', naxis, comment, status)
+      call ftpkyj(lun_h, 'ONAXIS1', naxis1, comment, status)
+      call ftpkyj(lun_h, 'ONAXIS2', naxis2, comment, status)
+      call ftpkys(lun_h, 'DETECTOR', detect(1:19), comment, status)
+      call ftpkyd(lun_h, 'PHPADU', phpadu, -2, comment, status)
+      call ftpkyd(lun_h, 'RDNOISE', rdnoise, -5, comment, status)
+      print *, MOP_version, status
+      call ftpkyf(lun_h, 'MOP_VER', MOP_version, 3, comment, status)
+
+      call ftclos(lun_h, status)
 
       return
 

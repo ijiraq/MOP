@@ -33,7 +33,7 @@ dependency = 'step3'
 
 
 def run(expnum, ccd, prefix=None, version='p', field=None,
-        measure3=MEASURE3, dry_run=False, force=False):
+        measure3=MEASURE3, dry_run=False, force=False, img_ext=0):
 
     message = storage.SUCCESS
 
@@ -109,7 +109,7 @@ def run(expnum, ccd, prefix=None, version='p', field=None,
 
                 return storage.SUCCESS
 
-            cmd_args = ['measure3', prefix + str(expnum) + version + str(ccd).zfill(2)]
+            cmd_args = ['measure3', prefix + str(expnum) + version + str(ccd).zfill(2), '--img-ext', str(img_ext)]
             logging.info("Running measure3: {}".format(str(cmd_args)))
             logging.info(util.exec_prog(cmd_args))
 
@@ -160,6 +160,7 @@ def main():
                         action='store_true')
     parser.add_argument("--force", '-f', action='store_true')
     parser.add_argument("--dry-run", action="store_true", help="Don't push back to VOSpace, implies --force")
+    parser.add_argument("--img-ext", default=0, type=int, help="Which extension has the image")
 
     cmd_line = " ".join(sys.argv)
     args = parser.parse_args()
@@ -191,7 +192,8 @@ def main():
             field=args.field,
             measure3=args.measure3,
             dry_run=args.dry_run,
-            force=args.force)
+            force=args.force,
+            img_ext=args.img_ext)
 
 
 if __name__ == '__main__':

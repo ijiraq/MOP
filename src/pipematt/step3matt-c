@@ -33,7 +33,13 @@ $unidfile1 = "$im1".".unid.matt";
 $unidfile2 = "$im2".".unid.matt";
 $unidfile3 = "$im3".".unid.matt";
 $result    = "$im1".".moving.matt";
+$header = "$im1".".mopheader";
 
+$cd12  = `gethead CD1_2 $header`; 
+$cd22  = `gethead CD2_2 $header`;
+$rotang = atan2($cd12, $cd22);
+$angle = $angle - $rotang*180/3.1415;
+print STDERR "$opt_a -> $angle, $rotang*180/3.1415\n";
 # Prepare header.
 
 open(OUTFILE,"> $result");

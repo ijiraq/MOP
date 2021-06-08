@@ -8,19 +8,23 @@ C -*-compile-command: "cf77 -O6 -o ../bin/LINUX/step3jmp step3jmp.f -L ../lib/LI
      $  flux(maxframes,n_o_max_cat), intensity(maxframes,n_o_max_cat),
      $  size_obj(maxframes,n_o_max_cat), elong(maxframes,n_o_max_cat),
      $  coo(maxframes,n_o_max_cat,2), coo_sys1(maxframes,n_o_max_cat,2),
-     $  tmpr(n_o_max_cat)
+     $     tmpr(n_o_max_cat)
+      real*8
+     $     cd11, cd12, cd21, cd22, rotang
 
       integer*4
-     $  mov_obj(maxframes,n_o_max_cat), indx(n_o_max_cat),
-     $  n_objects(maxframes), n_obj, narg, iargc, i, j, k, n, l,
-     $  iyyy, mm, m1, m2, m3, k1, ff, i1, i2, npr_3, nf, n1,
-     $  proposed_n(maxframes,n_o_max_cat), nz, min_num_frames,
-     $  indx2(n_o_max_cat), nframes, frame_number
+     $     mov_obj(maxframes,n_o_max_cat), indx(n_o_max_cat),
+     $     n_objects(maxframes), n_obj, narg, iargc, i, j, k, n, l,
+     $     iyyy, mm, m1, m2, m3, k1, ff, i1, i2, npr_3, nf, n1,
+     $     proposed_n(maxframes,n_o_max_cat), nz, min_num_frames,
+     $     indx2(n_o_max_cat), nframes, frame_number, status,
+     $     hdutype, blocksize, mode
 
       real*4
      $  rmax, rmin, tmp1, c1(2), c2(2), cr(4), min_day_m, tmp,
      $  max_day_m, min_mo_sec_hour, max_mo_sec_hour, tol_dis_lin,
-     $  min_motion_pix, pixscale, ang_mean, ang_width, mopvers
+     $     min_motion_pix, pixscale, ang_mean, ang_width, mopvers
+      
 
       real*8
      $  obs_time(maxframes), mjd, day
@@ -30,9 +34,10 @@ C -*-compile-command: "cf77 -O6 -o ../bin/LINUX/step3jmp step3jmp.f -L ../lib/LI
      $  no_rx, no_w, help, jclndr
 
       character
-     $  images(maxframes)*20, line*200, arg*80, frame*100,
-     $  result_ident_file*100, result_ident_files(maxframes)*100,
-     $  unidentif_file_cats(maxframes)*100, header(7)*80
+     $     images(maxframes)*20, line*200, arg*80, frame*100,
+     $     result_ident_file*100, result_ident_files(maxframes)*100,
+     $     unidentif_file_cats(maxframes)*100, header(7)*80,
+     $     mopheader(maxframes)*80, comment*80
 
       common /c1/min_day_m, max_day_m, tol_dis_lin, min_motion_pix
       common /angles/ang_mean, ang_width
@@ -138,16 +143,6 @@ c Create a file for later error handling
       min_motion_pix = 0.
       min_num_frames = 3
       ang_width = abs(ang_width)
- 1234 continue
-      if (ang_mean .gt. 180.) then
-         ang_mean = ang_mean - 360.
-         goto 1234
-      end if
- 1235 continue
-      if (ang_mean .lt. -180.) then
-         ang_mean = ang_mean + 360.
-         goto 1235
-      end if
 
       nframes = 3
 
@@ -164,7 +159,44 @@ c     -----------------------------------------
      $     '.unid.jmp'
          result_ident_files(j) = frame(i1:i2)//
      *     '.moving.jmp'
+         mopheader(j) = frame(i1:i2)//'.mopheader'
       end do
+
+C     Get the rotation angles from the header if possible
+      status = 0
+      blocksize=1
+      mode = 0
+      call FTDKOPN (1, mopheader(1), 0, blocksize, status)
+      status = 0
+      call FTMAHD(1, 1, hdutype, status)
+      call ftgkyd(1, 'CD1_1', cd11, comment, status)
+      call ftgkyd(1, 'CD1_2', cd12, comment, status)
+      call ftgkyd(1, 'CD2_1', cd21, comment, status)
+      call ftgkyd(1, 'CD2_2', cd22, comment, status)
+      call ftclos(1, status)
+ 999  CONTINUE
+      if ( status .gt. 0) then
+         rotang = 0.0
+      else
+         rotang = 180*ATAN2(cd12, cd22)/3.1415
+      end if
+      print *, "ROTANG ", rotang
+      print *, ang_mean, rotang
+      ang_mean = ang_mean - rotang
+
+ 1234 continue
+      if (ang_mean .gt. 180.) then
+         ang_mean = ang_mean - 360.
+         goto 1234
+      end if
+ 1235 continue
+      if (ang_mean .lt. -180.) then
+         ang_mean = ang_mean + 360.
+         goto 1235
+      end if
+
+      print *, ang_mean, rotang
+
 
       result_ident_file = result_ident_files(1)
       open(2,file=result_ident_file,status='unknown')

@@ -5,7 +5,10 @@ import os
 import argparse
 import logging
 from pathlib import Path
-
+from ossos import wcs
+import numpy
+from astropy.table import Table
+from astropy.io import fits
 
 SUCCESS_FILE = "measure3.OK"
 FAILED_EXT = "measure3.FAILED"
@@ -16,7 +19,8 @@ CANDS_ASTROM_EXT = 'measure3.cands.astrom'
 def main():
     parser = argparse.ArgumentParser(description="Run xy2skypv on cands.comb files to produce cands.astrom")
     parser.add_argument('base_image', help="The base image referencing the .cands.comb file")
-
+    parser.add_argument('--img-ext', type=int, default=0, help="Which extension has the image data")
+    
     args = parser.parse_args()
     base_image = args.base_image
 
@@ -76,16 +80,26 @@ def main():
         astrometry_lines = {}
         for base_name in xy_files:
             xy_files[base_name].close()
-            cmd = 'xy2skypv %s.fits %s.xy %s.rd' % (base_name, base_name, base_name)
-            os.system(cmd)
-            astrometry_lines[base_name] = open("%s.rd" % base_name).readlines()
-
+            xy_table = Table.read(f'{base_name}.xy', format='ascii')
+            try:
+                ra, dec= wcs.WCS(fits.open(f'{base_name}.fits')[args.img_ext].header).wcs_pix2world(xy_table['col1'], xy_table['col2'], 1)
+                astrometry_lines[base_name] = numpy.array([ra, dec, xy_table['col1'], xy_table['col2']]).T
+            except Exception as ex:
+                logging.error(str(ex))
+                cmd = 'xy2skypv %s.fits %s.xy %s.rd' % (base_name, base_name, base_name)
+                os.system(cmd)
+                astrometry_lines[base_name] = []
+                for line in open("%s.rd" % base_name).readlines():
+                    rd = line.split()
+                    astrometry_lines[base_name].append([float(rd[0]), float(rd[1])])
+                astrometry_lines[base_name] = numpy.array(astrometry_lines[base_name])
+                
         for idx in range(len(astrometry_lines[base_names[0]])):
             astrom_file.write("\n")
             for base_name in base_names:
-                rd = astrometry_lines[base_name][idx].split()
-                xy = xy_lines[base_name][idx].split()
-                if rd[2] != xy[0] or rd[3] != xy[1]:
+                rd = astrometry_lines[base_name][idx]
+                xy = [float(x) for x in xy_lines[base_name][idx].split()]                
+                if ( (rd[2]-xy[0])**2 + (rd[3] - xy[1])**2) > 1:
                     # the files are misalligned?
                     raise ValueError("MISMATCH in astrometric code... bailing out.\n")
                 astrom_file.write(" %8.2f %8.2f %8.2f %8.2f %12.7f %12.7f\n" % (float(xy[0]),
