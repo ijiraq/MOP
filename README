@@ -1,2 +1,3 @@
 MOP is a software pipeline designed to detect Kuiper belt Objects in CFHT MEGAPRIME data.
-It is primarily Python 2.7.
+
+Python is used to run the pipeline while the actual detection software is in c and fortran. 
