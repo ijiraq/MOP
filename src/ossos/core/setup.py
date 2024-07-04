@@ -11,14 +11,14 @@ else:
     raise RuntimeError("Unable to find version string in %s." % (VERSION_FILENAME,))
 
 dependencies = ['requests >= 2.7',
-                'astropy >= 4.0',
+                'astropy < 6.0',
                 'vos >= 3.3.2',
                 'numpy >= 1.6.1',
                 'matplotlib',
                 'd2to1 >= 0.2.10',
                 'scipy',
                 'uncertainties',
-                'pyds9 >= 1.8',
+                # 'pyds9 >= 1.8',
                 'wxPython > 4.0',
                 'pypubsub > 4.0',
                 'mp_ephem']

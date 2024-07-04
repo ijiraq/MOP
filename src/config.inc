@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 basedir=`pwd`
 syst=`uname -s`
@@ -88,9 +88,9 @@ export ARCH
 
 BINDIR=${PREFIX}/bin 
 export BINDIR
-BINDIRA=${PREFIX}/bin/$ARCH
+BINDIRA=${PREFIX}/bin/
 export BINDIRA
-LIBDIRA=${PREFIX}/lib/$ARCH
+LIBDIRA=${PREFIX}/lib/
 export LIBDIRA
 LIBDIR=${PREFIX}/lib/
 export LIBDIR

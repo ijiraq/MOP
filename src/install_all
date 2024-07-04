@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source config.inc 
+./config.inc 
 
 initdir=$basedir
 

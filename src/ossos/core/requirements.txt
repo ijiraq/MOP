@@ -3,7 +3,7 @@ d2to1
 requests
 numpy
 scipy
-astropy
+astropy<6.0
 uncertainties
 pyds9
 wxPython
