@@ -1,6 +1,6 @@
 #! /bin/bash
 
-source ../config.inc 
+source ../config.inc $*
 
 syst=`uname -s`
 
@@ -25,7 +25,7 @@ Linux)
     ;;
 esac
 
-BINDIRA=${PREFIX}/bin/${ARCH}
+BINDIRA=${PREFIX}/bin
 BINDIR=${PREFIX}/bin
 CONFIGDIR=${PREFIX}/config
 
@@ -43,19 +43,19 @@ basedir=`pwd`
 # Now use the system install sex
 which sex >& /dev/null || echo "Please install sextractor on your system."
 
-# Install match
-
+# Install match 
+# this is nolonger installed
 cd ${basedir}
-if [ ! -f $BINDIRA/match ]; then
-    echo "Installing match."
-    gunzip < match-tar.gz | tar xf -
-    cd match
-    make clean
-    make all
-    cp match $BINDIRA/
-    cd ..
-    \rm -rf match
-fi
+#if [ ! -f $BINDIRA/match ]; then
+#    echo "Installing match."
+#    gunzip < match-tar.gz | tar xf -
+#    cd match
+#    make clean
+#    make all
+#    cp match $BINDIRA/
+#    cd ..
+#    \rm -rf match
+#fi
 
 # Install wcstools
 which gethead >& /dev/null || echo "Please ensure that gethead, part of the WCSTools package, is in your path."
