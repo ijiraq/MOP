@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../config.inc 
+source ../config.inc $*
 
 . ../MOP_version
 cat MOP_version.inc-c | sed "s|AA-MOPVERSION|$MOPversion|" > MOP_version.inc
