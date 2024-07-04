@@ -726,7 +726,6 @@ class Query(object):
         self.headers = {'User-Agent': 'OSSOS'}
 
     def get(self):
-    def get(self):
         """
         :return: A string containing the TSV result from SSOS
         :rtype: str
