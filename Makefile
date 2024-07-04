@@ -1,6 +1,5 @@
 
 REPO = images.canfar.net
-current_dir := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
 
 # Change the following parameters for your project or set on the make command line
@@ -12,7 +11,7 @@ VERSION = 0.1
 NAME = $(REPO)/$(PROJECT)/$(DEVNAME)
 
 production: dependencies docker/Dockerfile
-	docker build --target deploy --build-arg PREFIX=$(current_dir)  -t $(NAME):$(VERSION) -f docker/Dockerfile .
+	docker build --target deploy -t $(NAME):$(VERSION) -f docker/Dockerfile .
 
 deploy: production
 	docker push $(NAME):$(VERSION)
