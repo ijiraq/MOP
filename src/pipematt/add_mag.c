@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 #define MAXLINE 200
 #define SKIP 0
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -20,7 +21,10 @@ main(argc, argv)
   }
 
   for(i=0; i<SKIP; i++){
-    fgets(line, MAXLINE, stdin);
+    if(fgets(line, MAXLINE, stdin)==NULL){
+	    printf("Failed to get line from STDIN\n");
+	    exit(-1);
+    };
   }
 
   flux_min = 1.0;

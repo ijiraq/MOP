@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 #define IGREG 2299161
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {

@@ -1,7 +1,7 @@
 #define PI 3.14159265358979323846
 #define TWOPI 6.283185307179586476925287
 #define MAXLINE 200
-
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -24,7 +24,7 @@ print_help(void)
   exit (1);
 }
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -34,6 +34,7 @@ main(argc, argv)
   FILE *trans_file;
   double x0, y0, x, y, flux, flux_max, area, mag, elong;
   double a, b, c, d, e, f;
+  int ierr;
 
 
   if(argc == 1) {
@@ -50,7 +51,10 @@ main(argc, argv)
     exit(-1);
   }
 
-  fscanf(trans_file, "%lf %lf %lf %lf %lf %lf", &a, &b, &c, &d, &e, &f);
+  if (fscanf(trans_file, "%lf %lf %lf %lf %lf %lf", &a, &b, &c, &d, &e, &f) != 6) {
+      printf("Scan of %s failed at line 1\n", trans_file_name);
+      exit(-1);
+  }
 
   /*
   fgets(line,MAXLINE,stdin);

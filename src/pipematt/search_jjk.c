@@ -3,7 +3,7 @@
 #define MAX_IDX 1000
 #define SKIP 7
 #define MAXLINE 200
-
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -45,7 +45,7 @@ print_help(void)
   exit (1);
 }
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -101,7 +101,10 @@ main(argc, argv)
     sscanf(argv[3*i+10], "%s", file_name[i]);
     file[i] = fopen(file_name[i], "r");
     for(j=0; j<SKIP; j++){
-      fgets(line, MAXLINE, file[i]);
+      if (fgets(line, MAXLINE, file[i])==NULL){
+	      printf("Failed to read line from %s\n", file_name[i]);
+	      exit(-1);
+      }
     }
     sscanf(argv[3*i+11], "%lf", &tobs[i]);
     sscanf(argv[3*i+12], "%lf", &fwhm[i]);

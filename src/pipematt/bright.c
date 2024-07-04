@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 #define MAX_IDX 1000
 #define MAXLINE 200
 #define LARGE 1e100
 #define MAX_STARS 15000
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {

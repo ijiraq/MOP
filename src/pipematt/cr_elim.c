@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <math.h>
-
+#include <stdlib.h>
 #define MAXLINE 200
 #define SKIP 6
 #define MAXELONG 9.99
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -25,7 +25,10 @@ main(argc, argv)
   sscanf(argv[3], "%lf", &p_min);
 
   for(i=0; i<SKIP; i++){
-    fgets(line, MAXLINE, stdin);
+    if(fgets(line, MAXLINE, stdin)==NULL){
+	    printf("Failed to get line from STDIN\n");
+	    exit(-1);
+    };
   }
 
   /* obs_cons is the threshold for 5 pixel seeing */

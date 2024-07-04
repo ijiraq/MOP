@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <stdlib.h>
 #define MAX_IDX 1000
 #define MAXLINE 200
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -29,12 +30,18 @@ main(argc, argv)
     exit(-1);
   }
 
-  sscanf(argv[1], "%lf", &seeing);
+  if (sscanf(argv[1], "%lf", &seeing)!=1){
+	  printf("Failed getting seeing value from %s\n", argv[1]);
+	  exit(-1);
+  }
 
   n_files = argc-2;
 
   for(i=0; i<n_files; i++){
-    sscanf(argv[i+2], "%s", file_name[i]);
+    if(sscanf(argv[i+2], "%s", file_name[i])!=1){
+	    printf("Didn't parse filename %s\n", file_name[i]);
+	    exit(-1);
+    };
     file[i] = fopen(file_name[i], "r");
   }
 

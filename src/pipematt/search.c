@@ -3,7 +3,7 @@
 #define MAX_IDX 1000
 #define SKIP 7
 #define MAXLINE 200
-
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -23,7 +23,7 @@ print_help(void)
   exit (1);
 }
 
-main(argc, argv)
+int main(argc, argv)
      int argc;
      char **argv;
 {
@@ -73,9 +73,16 @@ main(argc, argv)
     sscanf(argv[2*i+7], "%s", file_name[i]);
     file[i] = fopen(file_name[i], "r");
     for(j=0; j<SKIP; j++){
-      fgets(line, MAXLINE, file[i]);
+      if (fgets(line, MAXLINE, file[i])==NULL){
+	      printf("Failed reading first line of %s\n", file_name[i]);
+	      exit(-1);
+      }
     }
-    sscanf(argv[2*i+8], "%lf", &tobs[i]);
+
+    if (sscanf(argv[2*i+8], "%lf", &tobs[i])!= 1) {
+	    printf("Failed to convert %s to  obs date\n", argv[2*i+8]);
+	    exit(-1);
+    }
     /*printf("%lf\n", tobs[i]);*/
   }
 
