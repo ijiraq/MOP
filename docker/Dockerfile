@@ -49,6 +49,9 @@ WORKDIR /opt/MOP_src/src/ossos/core
 RUN /opt/MOP/bin/pip install .
 WORKDIR /
 ADD docker/ossos.sh /etc/profile.d/
+ADD docker/iraf.sh /etc/profile.d/
+RUN apt install -y csh
+RUN apt install -y wcstools
 
 # Two build sets, deploy and test
 # Stuff here below here is for setting up a test user that sort of looks like a canfar science portal user
