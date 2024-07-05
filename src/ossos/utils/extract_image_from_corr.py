@@ -17,11 +17,19 @@ def extract_image(filename):
         new_hdu = hdulist[0]
         new_hdu.data = hdulist[1].data
         for keyword in hdulist[1].header:
-            if keyword == 'EXTEND':
+            if keyword in ['EXTEND', 'XTENSION'] :
                 continue
             new_hdu.header[keyword] = hdulist[1].header[keyword]
         new_hdu.writeto(out_filename)
-    
+        out_filename = f"{expnum}p{ccdno}_weight.fits"
+        new_hdu = hdulist[0]
+        new_hdu.data = hdulist[3].data
+        for keyword in hdulist[3].header:
+            if keyword in ['EXTEND', 'XTENSION'] :
+                continue
+            new_hdu.header[keyword] = hdulist[3].header[keyword]
+        new_hdu.writeto(out_filename)
+
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()

@@ -2,6 +2,7 @@ C -*-compile-command: "make_lib"; -*-
 
       subroutine create_header (lun_i, naxis1, naxis2, head_name, lun_h)
 c-------------------------------------------------------------------
+c Added HSC: JJK/YTC 05-Jul-2023
 
       implicit none
 
@@ -17,7 +18,8 @@ c-------------------------------------------------------------------
 
       character
      $  comment*80, ras*19, decs*19, string*19, detect*20, line*80,
-     $  ut_start*20, telesc*20, ccdsum*8, detsec*40, head_name*80
+     $  ut_start*20, telesc*20, ccdsum*8, detsec*40, head_name*80,
+     $  frameid*20, expid*20
 
       if (lun_h .le. 0) stop
 
@@ -34,7 +36,36 @@ c Reads header keywords.
          call ftgkys (lun_i, 'DETECTOR', detect, comment, status)
       end if
       write (6,'(a)') detect
-      if (detect(1:7) .eq. 'CFH12K ') then
+
+      if (detect(1:17) .eq. 'Hyper Suprime-Cam') then
+
+c This is HSC on Subaru
+
+        call ftgrec (lun_i, 0, comment, status)
+        call ftgkyd (lun_i, 'MJD-STR', mjd_obs, comment, status)
+        call ftgrec (lun_i, 0, comment, status)
+        call ftgkyd (lun_i, 'EXPTIME', exptime, comment, status)
+        call ftgrec (lun_i, 0, comment, status)
+        call ftgkys (lun_i, 'FRAMEID', expid, comment, status)
+        read(expid(5:10), *) expnum
+        call ftgrec (lun_i, 0, comment, status)
+        call ftgkyd (lun_i, 'CRVAL1', crval1, comment, status)
+        call ftgrec (lun_i, 0, comment, status)
+        call ftgkyd (lun_i, 'CRVAL2', crval2, comment, status)
+        call ftgrec (lun_i, 0, comment, status)
+c         call ftgkyd (lun_i, 'PIXSCAL1', pixscale, comment, status)
+        pixscale = 0.167
+        call ftgrec (lun_i, 0, comment, status)
+        call ftgkyj (lun_i, 'T_SDOID', chipnum, comment, status)
+        call ftgrec (lun_i, 0, comment, status)
+        call ftgkyd (lun_i, 'T_GAIN1', phpadu, comment, status)
+        rdnoise = 4.5
+        call ftgrec (lun_i, 0, comment, status)
+        call ftgkyd (lun_i, 'CRPIX1', crpix1, comment, status)
+        call ftgrec (lun_i, 0, comment, status)
+        call ftgkyd (lun_i, 'CRPIX2', crpix2, comment, status)
+        detect(18:20) = '  '
+      elseif (detect(1:7) .eq. 'CFH12K ') then
 
 c This is CFH12K on CFHT
 
