@@ -139,10 +139,12 @@ class AstromParser(object):
         obsnum = 0
         for match in self.obs_header_regex.finditer(filestr):
             obs = observations[obsnum]
+            logger.debug(obs)
             for header_key, header_val in match.groupdict().items():
                 obs.header[header_key] = header_val
             obsnum += 1
-
+        logger.debug(observations)
+        logger.debug(obsnum)
         assert obsnum == len(observations), ("Number of observations headers "
                                              "parsed doesn't match length of "
                                              "observation list")
@@ -184,6 +186,7 @@ class AstromParser(object):
                 fields.append(y_ref)
                 # Find the observation corresponding to this reading
                 fields.append(observations[i])
+                logger.debug(f"source fields: {fields}")
 
                 source.append(SourceReading(*fields))
 
@@ -659,7 +662,7 @@ class SourceReading(object):
           naxis1, naxis2: the size of the FITS image where this detection is from.
         @param is_inverted:
         """
-        # print x, y, x0, y0, ra, dec, xref, yref
+        logger.debug(f"{x} {y} {x0} {y0} {ra} {dec} {xref}{yref}")
         self._pix_coord = None
         if x is not None and y is not None:
             self.pix_coord = x, y

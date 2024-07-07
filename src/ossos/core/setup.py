@@ -31,9 +31,14 @@ console_scripts = ['mkpsf = ossos.pipeline.mkpsf:main', 'step3 = ossos.pipeline.
                    'update_astrometry = ossos.pipeline.update_astrometry:main',
                    'measure3 = ossos.pipeline.measure3:main',
                    'align = ossos.pipeline.align:main',
+                   'align_novos = ossos.pipeline.align_novos:main',
                    'plant = ossos.pipeline.plant:main',
+                   'plant_novos = ossos.pipeline.plant_novos:main',
                    'astrom_mag_check = ossos.pipeline.astrom_mag_check:main',
-                   'scramble = ossos.pipeline.scramble:main']
+                   'astrom_mag_check_novos = ossos.pipeline.astrom_mag_check_novos:main',
+                   'scramble = ossos.pipeline.scramble:main',
+                   'extract_hsc = ossos.pipeline.extract_hsc:main',
+                   'comb_to_astrom = ossos.pipeline.comb_to_astrom:main']
 
 gui_scripts = ['validate = ossos.tools.validate:main']
 
@@ -57,7 +62,7 @@ setup(name='ossos',
                    ],
       package_data={'ossos': ['gui/*.json']},
       install_requires=dependencies,
-      # scripts=["scripts/gui",],
+      scripts=["scripts/process.sh",],
       entry_points={'console_scripts': console_scripts,
                     'gui_scripts': gui_scripts},
       packages=find_packages(exclude=['tests', ])

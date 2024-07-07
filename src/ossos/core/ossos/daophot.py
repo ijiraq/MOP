@@ -4,10 +4,10 @@ import os
 os.environ['PYRAF_NO_CLCACHE'] = "True"
 import tempfile
 import warnings
-warnings.simplefilter("ignore")
+# warnings.simplefilter("ignore")
 from .gui import logger
-from stsci.tools import capable
-capable.OF_GRAPHICS = False
+# from stsci.tools import capable
+# capable.OF_GRAPHICS = False
 from pyraf import iraf
 from astropy.io import fits
 from astropy.io import ascii
@@ -44,6 +44,8 @@ def phot(fits_filename, x_in, y_in, aperture=15, sky=20, swidth=10, apcor=0.3,
     :param zmag: zeropoint magnitude
     :param extno: extension of fits_filename the x/y location refers to.
     """
+    import sys
+    sys.stderr.write("Starting phot\n")
     if not hasattr(x_in, '__iter__'):
         x_in = [x_in, ]
     if not hasattr(y_in, '__iter__'):
@@ -75,6 +77,7 @@ def phot(fits_filename, x_in, y_in, aperture=15, sky=20, swidth=10, apcor=0.3,
                   "DEFAULT": 26.0,
                   "g.MP9401": 32.0,
                   'r.MP9601': 31.9,
+                  'EB-gri': 33.520,
                   'gri.MP9603': 33.520}
     if zmag is None:
         logger.warning("No zmag supplied to daophot, looking for header or default values.")
@@ -93,6 +96,8 @@ def phot(fits_filename, x_in, y_in, aperture=15, sky=20, swidth=10, apcor=0.3,
                         "doesn't match PHOTZP value in image header: ({})".format(zmag, photzp)))
 
     # setup IRAF to do the magnitude/centroid measurements
+    import sys
+    sys.stderr.write("STARTING IRAF\n")
     iraf.set(uparm="./")
     iraf.digiphot()
     iraf.apphot()
@@ -121,6 +126,7 @@ def phot(fits_filename, x_in, y_in, aperture=15, sky=20, swidth=10, apcor=0.3,
     iraf.phot.verbose = 'no'
     iraf.phot.verify = 'no'
     iraf.phot.interactive = 'no'
+    sys.stderr.write("Getting coo files\n")
 
     # Used for passing the input coordinates
     coofile = tempfile.NamedTemporaryFile(suffix=".coo", delete=False, mode='w')
@@ -138,6 +144,7 @@ def phot(fits_filename, x_in, y_in, aperture=15, sky=20, swidth=10, apcor=0.3,
     coofile.close()
     magfile.close()
     os.remove(magfile.name)
+    sys.stderr.write("Doing phot\n")
 
     iraf.phot(fits_filename+"[{}]".format(extno), coofile.name, magfile.name)
     pdump_out = ascii.read(magfile.name, format='daophot')

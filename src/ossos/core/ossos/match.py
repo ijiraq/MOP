@@ -247,17 +247,18 @@ def match_planted(fk_candidate_observations, match_filename, bright_limit=BRIGHT
                                                          n_bright_found,
                                                          offset,
                                                          std))
-
+    fout.flush()
     try:
-        writer = ascii.FixedWidth
+        # writer = ascii.FixedWidth
         # add a hash to the start of line that will have header columns: for JMP
-        fout.write("# ")
-        fout.flush()
-        ascii.write(planted_objects_table, output=fout, Writer=writer, delimiter=None)
-        if len(false_positives_table) > 0:
-            with open(match_filename+".fp", 'a') as fpout:
-                fpout.write("#")
-                ascii.write(false_positives_table, output=fpout, Writer=writer, delimiter=None)
+        # fout.write("# ")
+        # fout.flush()
+        planted_objects_table.write(fout, format='ascii.fixed_width')
+        # ascii.write(planted_objects_table, output=fout, Writer=writer, delimiter=None)
+        # if len(false_positives_table) > 0:
+        #    with open(match_filename+".fp", 'a') as fpout:
+        #        fpout.write("#")
+        #        ascii.write(false_positives_table, output=fpout, Writer=writer, delimiter=None)
     except Exception as e:
         logging.error(str(e))
         raise e

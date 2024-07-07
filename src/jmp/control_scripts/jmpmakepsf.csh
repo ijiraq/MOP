@@ -23,7 +23,7 @@ else
     set cl_binary = "${irafbin}cl.e"
 endif
 
-
+set cl_binary=irafcl
 
 set iraf = "/usr/lib/iraf/"
 set host = "${iraf}unix/"
@@ -50,7 +50,7 @@ set thresh="4."
 set maxlin="20000."
 
 if ( $?plant ) then
- if ( $plant == "YES" ) then 
+ if ( $plant == "yes" ) then 
     set plant = "yes"
  else 
     set plant = "no"
@@ -75,8 +75,13 @@ if ( -e $dir/$psf && $force == "no" ) then
 endif
 
 ## Now using Gwyn's ZP, if available
-echo "Getting SGWYN ZP from ${image}"
-set zerop=`gethead $dir/${image}.fits PHOTZP`
+echo "Getting ZP from MAGZERO keyword in ${image}"
+set zerop=`gethead $dir/${image}.fits MAGZERO`
+set exptime=`gethead $dir/${image}.fits EXPTIME`
+echo "Exptime: $exptime"
+set zerop=`echo $zerop $exptime | awk ' { print $1 + 2.5*log($2)/log(10) } ' `
+echo "Zeropoint: $zerop"
+
 if ( "X$zerop" == "X" ) then
     echo -n "Didn't find SGWYN ZP, Trying to set zeropoint by scaling ELIXIR value, got: "
     set zerop=`gethead $dir/${image}.fits PHOT_C`
@@ -95,15 +100,14 @@ if ( "X$zerop" == "X" ) then
         set zerop=`echo $zerop $exptime $phot_k $airmass | awk ' { print $1 + 2.5*log($2)/log(10) + $3*($4-1) } ' `
     endif
     if ( "X$zerop" == "X" ) then
-        set zerop="30.0"
+        set zerop="27.05"
     endif
     echo $zerop
 endif
 
 set term = none 
 
-
-cd ~/iraf
+# cd ${HOME}/iraf/
 
 $cl_binary << EOF
 
@@ -126,6 +130,7 @@ cd $dir
   jmpmakepsf.zeropt=$zerop
   jmpmakepsf.swidth=1
   makepsf.zeropt=$zerop
+
   jmpprepimage $image $fwhm $thresh $maxlin
   delete ./piejmpmaf.par verify-
   delete $lock verify-

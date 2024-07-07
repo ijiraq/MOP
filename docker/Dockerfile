@@ -39,6 +39,8 @@ RUN apt-key adv --fetch-keys https://repo.astromatic.net/astromatic.key
 RUN apt update
 RUN apt install -y sextractor
 RUN apt install -y libcfitsio-dev
+RUN apt install -y csh
+RUN apt install -y wcstools
 WORKDIR /opt/MOP_src
 ADD src src
 WORKDIR /opt/MOP_src/src/pipematt
@@ -46,12 +48,14 @@ RUN ./install_pipematt -p /opt/MOP/
 WORKDIR /opt/MOP_src/src/jmp
 RUN ./install_pipejmp -p /opt/MOP
 WORKDIR /opt/MOP_src/src/ossos/core
-RUN /opt/MOP/bin/pip install .
+RUN /opt/MOP/bin/pip install -e .
 WORKDIR /
 ADD docker/ossos.sh /etc/profile.d/
 ADD docker/iraf.sh /etc/profile.d/
-RUN apt install -y csh
-RUN apt install -y wcstools
+RUN mkdir /opt/MOP/iraf
+ADD src/kinky /opt/MOP/iraf/kinky
+WORKDIR /opt/MOP_src/src/kinky
+RUN ./install_kinky -p /opt/MOP
 
 # Two build sets, deploy and test
 # Stuff here below here is for setting up a test user that sort of looks like a canfar science portal user

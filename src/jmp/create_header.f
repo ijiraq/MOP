@@ -64,7 +64,7 @@ c         call ftgkyd (lun_i, 'PIXSCAL1', pixscale, comment, status)
         call ftgkyd (lun_i, 'CRPIX1', crpix1, comment, status)
         call ftgrec (lun_i, 0, comment, status)
         call ftgkyd (lun_i, 'CRPIX2', crpix2, comment, status)
-        detect(18:20) = '  '
+        detect(1:20) = 'HSC                 '
       elseif (detect(1:7) .eq. 'CFH12K ') then
 
 c This is CFH12K on CFHT

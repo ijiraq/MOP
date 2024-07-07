@@ -101,7 +101,11 @@ sub rearrange {
     open(OUTFILE2,"> $objfile_m");
     while(<INFILE>){
 	if ( m/^\#/ ) {
-	print OUTFILE $_;
+	   if ( m/^\#\#   X       Y        FLUX     SIZE MAX_INT  ELON   X\^2/ ) {
+	       print OUTFILE "##   X       Y     X_0     Y_0        FLUX       SIZE   MAX_INT  ELON\n";
+	   } else {
+	       print OUTFILE $_;
+       }
 	} else {
 	($x, $y, $flux, $area, $flux_max, $elong) = split(' ');
 	print OUTFILE1 "$x $y $flux $area $flux_max $elong\n";

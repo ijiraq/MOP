@@ -4,10 +4,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib import rcParams
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
-from astropy.io import ascii
 import numpy
 import sys
-
+from astropy.table import Table
 # # EmulateApJ columnwidth=245.26 pts
 fig_width_pt = 246.0 * 3.0
 inches_per_pt = 1.0 / 72.27
@@ -49,20 +48,21 @@ for match_file in sys.argv[1:]:
               'measure_mag3': plt.subplot(gs2[2,0])}
 
    
-   T = ascii.read(match_file, header_start=-1, fill_values=[('--', 'nan'),], Reader=ascii.basic.CommentedHeader)
+   T = Table.read(match_file, format='ascii.fixed_width')
    plt.suptitle(match_file)
 
-   rates = T['sky_rate'].min()*2**(numpy.arange(0,5))
+   # rates = T['sky_rate'].min()*2**(numpy.arange(0, 5))
    rates = [0.5, 1, 5.0, 15]
 
    for idx in range(len(rates)-1):
-      mask1 = numpy.all([rates[idx] < T['sky_rate'], T['sky_rate']  < rates[idx+1]], axis=0)
-      mask2 = numpy.all([mask1, T['measure_mag1'].mask == False], axis=0)
-      (nadd, bins) = numpy.histogram(T['mag'][mask1], bins=numpy.arange(21,26,0.25))
-      (nfnd, bins) = numpy.histogram(T['mag'][mask2], bins=numpy.arange(21,26,0.25))
-      f = nfnd[nadd>0]/(1.0*nadd[nadd>0])
-      m = bins[0:-1][nadd>0]
-      ax_frac.plot(m, f, 'o-', label="{:3.1f}:{:3.1f}".format(rates[idx], rates[idx+1]))
+       print(T['sky_rate'])
+       mask1 = (T['sky_rate'] > rates[idx]) & (T['sky_rate'] < rates[idx + 1])
+       mask2 = numpy.all([mask1, T['measure_mag1'].mask == False], axis=0)
+       (nadd, bins) = numpy.histogram(T['mag'][mask1], bins=numpy.arange(21, 26, 0.25))
+       (nfnd, bins) = numpy.histogram(T['mag'][mask2], bins=numpy.arange(21, 26, 0.25))
+       f = nfnd[nadd > 0] / (1.0 * nadd[nadd > 0])
+       m = bins[0:-1][nadd > 0]
+       ax_frac.plot(m, f, 'o-', label="{:3.1f}:{:3.1f}".format(rates[idx], rates[idx + 1]))
    
    ax_frac.set_xlabel('mag')
    ax_frac.set_ylabel('f')
@@ -71,22 +71,22 @@ for match_file in sys.argv[1:]:
    if False:
     for idx in range(len(rates)-1):
       mask1 = numpy.all([rates[idx] < T['sky_rate'], 
-                         T['sky_rate']  < rates[idx+1], 
+                         T['sky_rate'] < rates[idx+1],
                          T['x'] < 1500, 
                          T['x'] > 500, 
                          T['y'] < 4000, 
-                         T['y']>500], axis=0)
+                         T['y'] > 500], axis=0)
       mask2 = numpy.all([mask1, T['measure_mag1'].mask == False], axis=0)
       (nadd, bins) = numpy.histogram(T['mag'][mask1], bins=numpy.arange(21,26,0.25))
       (nfnd, bins) = numpy.histogram(T['mag'][mask2], bins=numpy.arange(21,26,0.25))
-      f = nfnd[nadd>0]/(1.0*nadd[nadd>0])
-      m = bins[0:1][nadd>0]
+      f = nfnd[nadd > 0]/(1.0*nadd[nadd>0])
+      m = bins[0:1][nadd > 0]
       # ax_frac.plot(m, f, 's--', label="{:3.1f}:{:3.1f}".format(rates[idx], rates[idx+1]))
 
    ax_frac.legend(loc=3)
-   pp.savefig()
-   pp.close()
-   sys.exit()
+   # pp.savefig()
+   # pp.close()
+   # sys.exit()
 
    ax_xy.hexbin(T['x'],T['y'], cmap=plt.cm.Blues, mincnt=1, gridsize=80)
    ax_xy.hexbin(T['x'][T['measure_mag1'].mask==False],T['y'][T['measure_mag1'].mask==False], cmap=plt.cm.Reds, alpha=1, mincnt=1, gridsize=80)

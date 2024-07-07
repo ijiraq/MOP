@@ -12,9 +12,12 @@ import tempfile
 # set logging level and shunt to a file
 logging.getLogger('vos').setLevel(logging.ERROR)
 
-logfile = os.path.join(tempfile.gettempdir(), "ossos_validation.log")
+logfile = os.path.join(tempfile.gettempdir(), "fossil_validation.log")
+# format = "%(levelname)s: %(asctime)s %(thread)d %(module)s.%(funcName)s %(lineno)d: %(message)s",
+format = "%(pathname)s %(module)s.%(funcName)s %(lineno)d: %(message)s"
+
 logging.basicConfig(filename=logfile,
-                    format="%(levelname)s: %(asctime)s %(thread)d %(module)s.%(funcName)s %(lineno)d: %(message)s",
+                    format=format,
                     datefmt="%m/%d/%Y %I:%M:%S %p",
                     level=logging.ERROR)
 

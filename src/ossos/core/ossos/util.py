@@ -14,7 +14,7 @@ import tempfile
 
 try:
     try:
-        import erfa as d2dtf
+        from erfa import d2dtf
     except ImportError:
         from astropy._erfa import d2dtf
 except ImportError:

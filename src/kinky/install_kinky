@@ -1,0 +1,11 @@
+#!/bin/bash
+
+source ../config.inc $*
+
+extern=/usr/lib/iraf/unix/hlib/extern.pkg
+sed -i "42i\reset kinky = ${PREFIX}/iraf/kinky/" ${extern}
+sed -i '43i\task kinky.pkg = kinky$kinky.cl'   ${extern}
+
+# Create the symbolic links needed for pyraf.. not really sure why this is needed but it is.
+ln -s /usr/lib/iraf/bin /usr/lib/iraf/bin.linux
+ln -s /usr/lib/iraf/noao/bin /usr/lib/iraf/noao/bin.linux

@@ -129,7 +129,7 @@ def plot_eff_by_user(ax, blocks):
 if __name__ == '__main__':
     fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(9, 4))
     fig.subplots_adjust(hspace=0.1)
-    blocks =  ['13AE', '13AO'] # [',['13AO']  #
+    blocks = ['13AE', '13AO'] # [',['13AO']  #
 
     outfile = plot_eff_by_rate_of_motion(ax, blocks)
     # outfile = plot_eff_by_user(ax, blocks)

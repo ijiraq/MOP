@@ -112,12 +112,16 @@ class SourceCutout(object):
         @param hdulist_index:  the index of the HDUList entry that the CCDNUM is needed for.
         @return: ccdnum
         """
-        ccdnum = self.hdulist[hdulist_index].header.get('EXTVER',
-                                                        self.hdulist[hdulist_index].header.get('DETSER',
-                                                                                               self.hdulist[
-                                                                                                   0].header.get(
-                                                                                                   'CCDNUM', None)))
-        return ccdnum
+        possible_ccdnum_ext_keys = [(hdulist_index, 'EXTVER'),
+                                    (hdulist_index, 'DETSER'),
+                                    (0, 'CCDNUM'),
+                                    (hdulist_index, 'T_SDOID'),
+                                    (0, 'T_SDOID')]
+        for ext, key in possible_ccdnum_ext_keys:
+            logger.debug((ext, key, self.hdulist[ext].header.get(key, None)))
+            if key in self.hdulist[ext].header:
+                return self.hdulist[ext].header[key]
+        return None
 
     def get_hdulist_idx(self, ccdnum):
         """
@@ -126,9 +130,13 @@ class SourceCutout(object):
         @param ccdnum: the number of the CCD in the MEF that is being referenced.
         @return: the index of in self.hdulist that corresponds to the given CCD number.
         """
+        ccdnum=int(ccdnum)
         for (extno, hdu) in enumerate(self.hdulist):
             if (ccdnum == int(hdu.header.get('EXTVER', -1))
                     or str(ccdnum) in hdu.header.get('AMPNAME', '')):
+                return extno
+            if ccdnum == int(hdu.header.get('T_SDOID', -1)):
+                # HSC image processed with LSST Pipeline
                 return extno
             if ccdnum == int(hdu.header.get('DETSER', -1)):
                 # This is HSC image with DETSER in primary, image is in extno+1
