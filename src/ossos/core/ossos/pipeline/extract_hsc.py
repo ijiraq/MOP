@@ -13,7 +13,7 @@ def extract_image(filename):
         beeid = int(hdulist[0].header['T_BEEID'])
         expnum = int(re.match('HSCE(\d+)', expid).group(1)) + beeid
 
-        out_imagename = f"{expnum}p{ccdno}"
+        out_imagename = f"{expnum}p{ccdno:02d}"
         new_hdu = hdulist[0]
         SKYLEVEL = hdulist[0].header.get('SKYLEVEL', 0)
         new_hdu.data = numpy.int16(hdulist[1].data+SKYLEVEL)
@@ -23,7 +23,7 @@ def extract_image(filename):
             new_hdu.header[keyword] = hdulist[1].header[keyword]
         new_hdu.header['GAIN'] = hdulist[1].header.get('T_GAIN1', 4.5)
         new_hdu.writeto(f"{out_imagename}.fits", overwrite=True)
-        out_weightname = f"{expnum}p{ccdno}_weight.fits"
+        out_weightname = f"{expnum}p{ccdno:02d}_weight.fits"
         new_hdu = hdulist[0]
         new_hdu.data = hdulist[3].data
         for keyword in hdulist[3].header:
