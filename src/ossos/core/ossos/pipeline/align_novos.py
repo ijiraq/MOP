@@ -89,8 +89,8 @@ def align(expnums, ccd, version='s', prefix='', dry_run=False, force=True):
             sys.stderr.write("Starting align\n")
 
             filename = storage.get_image(expnum, ccd=ccd, version=version)
-            zeropoint_filename = f"{expnum}{version}{ccd}.zeropoint.used"
-            mopheader_filename = f"{expnum}{version}{ccd}.mopheader"
+            zeropoint_filename = f"{expnum}{version}{ccd:02d}.zeropoint.used"
+            mopheader_filename = f"{expnum}{version}{ccd:02d}.mopheader"
             zmag[expnum] = float(open(zeropoint_filename).read())
             mjdates[expnum] = float(fits.open(mopheader_filename)[0].header.get('MJD-OBSC'))
             apcor[expnum] = [float(x) for x in open(storage.get_file(expnum,
