@@ -108,7 +108,7 @@ do
     --ang "${angle}" --width ${plant_width} --num ${num}
   preix="fk"
   do_search
-  ccdstr="echo ${ccdnum}|awk '{printf(\"%02d\",$1)}'"
+  ccdstr=$(echo ${ccdnum}|awk '{printf("%02d",$1)}')
   astrom_mag_check_novos "${expnums[0]}" "${ccdnum}" --expnum "${expnums[0]}" --astrom-filename "fk${expnums[0]}p${ccdstr}.measure3.cands.astrom" --fk --type p
 done
 
