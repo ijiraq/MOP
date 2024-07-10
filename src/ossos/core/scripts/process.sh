@@ -9,8 +9,9 @@ main=$(pwd)
 # move into a working directory named for the field and chipnum
 field=$(gethead ${exp1} OBJECT)
 ccdnum=$(gethead ${exp1} T_SDOID)
-mkdir -p ${field}/${ccdnum} || exit 1
-cd ${field}/${ccdnum} || exit 1
+detnum=$(gethead ${exp1} DET-ID)
+mkdir -p ${field}/${detnum} || exit 1
+cd ${field}/${detnum} || exit 1
 
 # link the images into the working directory
 [ -f ${exp1} ] || ln -s ${main}/${exp1} ./

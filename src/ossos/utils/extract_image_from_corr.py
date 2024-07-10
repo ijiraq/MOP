@@ -13,7 +13,7 @@ def extract_image(filename):
         beeid = int(hdulist[0].header['T_BEEID'])
         expnum = int(re.match('HSCE(\d+)', expid).group(1)) + beeid
 
-        out_filename = f"{expnum}p{ccdno}.fits"
+        out_filename = f"{expnum}p{ccdno:02d}.fits"
         new_hdu = hdulist[0]
         new_hdu.data = hdulist[1].data
         for keyword in hdulist[1].header:
@@ -21,7 +21,7 @@ def extract_image(filename):
                 continue
             new_hdu.header[keyword] = hdulist[1].header[keyword]
         new_hdu.writeto(out_filename)
-        out_filename = f"{expnum}p{ccdno}_weight.fits"
+        out_filename = f"{expnum}p{ccdno:02d}_weight.fits"
         new_hdu = hdulist[0]
         new_hdu.data = hdulist[3].data
         for keyword in hdulist[3].header:
