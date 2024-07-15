@@ -5,7 +5,7 @@ the source.  The SourceCutout provides RA/DEC -> X/Y and X/Y -> RA/DEC mapping a
 
 import tempfile
 import traceback
-
+import os
 import numpy
 from astropy import units
 from astropy.coordinates import SkyCoord
@@ -47,7 +47,7 @@ class SourceCutout(object):
         self.init_skycoord = reading.sky_coord
 
         if self.reading.x is None or self.reading.y is None or (self.reading.x == -9999 and self.reading.y == -9999):
-            # indicates that reading assocated with this SourceCutout doesn't have x/y/extension information.
+            # indicates that reading associated with this SourceCutout doesn't have x/y/extension information.
             # Here we derive that information from the RA/DEC and the cutout parameters.
             (x, y, extno) = self.world2pix(self.reading.ra, self.reading.dec)
             self.reading.pix_coord = self.get_observation_coordinates(x, y, extno)
@@ -113,10 +113,11 @@ class SourceCutout(object):
         @return: ccdnum
         """
         possible_ccdnum_ext_keys = [(hdulist_index, 'EXTVER'),
-                                    (hdulist_index, 'DETSER'),
                                     (0, 'CCDNUM'),
                                     (hdulist_index, 'T_SDOID'),
-                                    (0, 'T_SDOID')]
+                                    (0, 'T_SDOID'),
+                                    (hdulist_index, 'DETSER'),
+                                    ]
         for ext, key in possible_ccdnum_ext_keys:
             logger.debug((ext, key, self.hdulist[ext].header.get(key, None)))
             if key in self.hdulist[ext].header:
@@ -294,8 +295,11 @@ class SourceCutout(object):
         @return: float
         """
         if self._zmag is None:
-            hdulist_index = self.get_hdulist_idx(self.reading.get_ccd_num())
-            self._zmag = self.hdulist[hdulist_index].header.get('PHOTZP', 30.0)
+            if os.access(os.path.basename(self.reading.get_zmag_uri()), os.R_OK):
+                self._zmag = open(os.path.basename(self.reading.get_zmag_uri()), 'r').read()
+            else:
+                hdulist_index = self.get_hdulist_idx(self.reading.get_ccd_num())
+                self._zmag = self.hdulist[hdulist_index].header.get('PHOTZP', 30.0)
         return self._zmag
 
     @property
