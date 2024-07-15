@@ -1,5 +1,5 @@
 from astropy.io import ascii
-from astropy.table import MaskedColumn, Table, Column
+from astropy.table import MaskedColumn, Table, Column, vstack
 import logging
 import math
 import numpy
@@ -205,72 +205,16 @@ def match_planted(fk_candidate_observations, match_filename, bright_limit=BRIGHT
     #         false_positives_table.add_row()
     #         false_positives_table[-1] = measure_mags(measures, false_positives_table[-1])
 
-    # Count an object as detected if it has a measured magnitude in the first frame of the triplet.
-    n_bright_found = numpy.count_nonzero(planted_objects_table['measure_mag1'][bright])
-    # Also compute the offset and standard deviation of the measured magnitude from that planted ones.
-    offset = numpy.mean(planted_objects_table['mag'][bright] - planted_objects_table['measure_mag1'][bright])
-    try:
-        offset = "{:5.2f}".format(offset)
-    except:
-        offset = "indef"
-
-    std = numpy.std(planted_objects_table['mag'][bright] - planted_objects_table['measure_mag1'][bright])
-    try:
-        std = "{:5.2f}".format(std)
-    except:
-        std = "indef"
-
     if os.access(match_filename, os.R_OK):
-        fout = open(match_filename, 'a')
+        table = vstack((Table.read(match_filename, format='ascii.ecsv'),
+                        planted_objects_table))
+        table.write(match_filename, format='ascii.ecsv', overwrite=True)
     else:
-        fout = open(match_filename, 'w')
-
-    fout.write("#K {:10s} {:10s}\n".format("EXPNUM", "FWHM"))
-    for measure in detections[0].get_readings():
-        fout.write('#V {:10s} {:10s}\n'.format(measure.obs.header['EXPNUM'], measure.obs.header['FWHM']))
-
-    fout.write("#K ")
-    for keyword in ["RMIN", "RMAX", "ANGLE", "AWIDTH"]:
-        fout.write("{:10s} ".format(keyword))
-    fout.write("\n")
-
-    fout.write("#V ")
-    for keyword in ["RMIN", "RMAX", "ANGLE", "AWIDTH"]:
-        fout.write("{:10s} ".format(fk_candidate_observations.sys_header[keyword]))
-    fout.write("\n")
-
-    fout.write("#K ")
-    for keyword in ["NBRIGHT", "NFOUND", "OFFSET", "STDEV"]:
-        fout.write("{:10s} ".format(keyword))
-    fout.write("\n")
-    fout.write("#V {:<10} {:<10} {:<10} {:<10}\n".format(n_bright_planted,
-                                                         n_bright_found,
-                                                         offset,
-                                                         std))
-    fout.flush()
-    try:
-        # writer = ascii.FixedWidth
-        # add a hash to the start of line that will have header columns: for JMP
-        # fout.write("# ")
-        # fout.flush()
-        planted_objects_table.write(fout, format='ascii.fixed_width')
-        # ascii.write(planted_objects_table, output=fout, Writer=writer, delimiter=None)
-        # if len(false_positives_table) > 0:
-        #    with open(match_filename+".fp", 'a') as fpout:
-        #        fpout.write("#")
-        #        ascii.write(false_positives_table, output=fpout, Writer=writer, delimiter=None)
-    except Exception as e:
-        logging.error(str(e))
-        raise e
-    finally:
-        fout.close()
-
-    # Some simple checks to report a failure how we're doing.
-    if n_bright_planted < minimum_bright_detections:
-        raise RuntimeError(1, "Too few bright objects planted.")
-
-    if n_bright_found / float(n_bright_planted) < bright_fraction:
-        raise RuntimeError(2, "Too few bright objects found.")
-
-    return "{} {} {} {}".format(n_bright_planted, n_bright_found, offset, std)
+        meta = {}
+        for measure in detections[0].get_readings():
+            meta[measure.obs.header['EXPNUM']] = {'FWHM': measure.obs.header['FWHM']}
+        for keyword in ["RMIN", "RMAX", "ANGLE", "AWIDTH"]:
+            meta[keyword] = fk_candidate_observations.sys_header[keyword]
+        planted_objects_table.meta = meta
+        planted_objects_table.write(match_filename, format='ascii.ecsv', overwrite=True)
 
