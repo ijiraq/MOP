@@ -1,7 +1,14 @@
 #!/bin/bash
 
+corr=(${1} ${2} ${3})
 
-imgs=(${1%.fits} ${2%.fits} ${3%.fits})
+imgs=Array()
+for c in ${corr[@]};
+do
+  imgs+=( $(extract_hsc ${c}) )
+  ln -s ${imgs[-1]}_image.fits ${imgs[-1]}.fits
+done
+
 main=$(pwd)
 
 # move into a working directory named for the field and chipnum
@@ -30,7 +37,6 @@ _FWHM=4.0
 _MAX_COUNT=30000
 
 
-#imgs=( $(extract_hsc $exp1) $(extract_hsc $exp2) $(extract_hsc $exp3) )
 expnums=()
 echo "${imgs[@]}"
 for img in "${imgs[@]}";
@@ -80,6 +86,7 @@ function do_search {
     ln -s ${img}_weight.fits weight.fits
     step1jmp -f ${prefix}${img} -w ${fwhm} -m ${_MAX_COUNT} -t ${_WAVE_THRESHOLD}
     step1matt -f ${prefix}${img} -w ${fwhm} -m ${_MAX_COUNT} -t ${_SEX_THRESHOLD}
+    mask ${prefix}${img}.obj.matt ${prefix}${img}_mask.fits ${prefix}${img}.obj.matt
   done
 
   # Determine lists of non-stationary sources.
