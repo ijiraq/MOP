@@ -38,7 +38,8 @@ console_scripts = ['mkpsf = ossos.pipeline.mkpsf:main', 'step3 = ossos.pipeline.
                    'astrom_mag_check_novos = ossos.pipeline.astrom_mag_check_novos:main',
                    'scramble = ossos.pipeline.scramble:main',
                    'extract_hsc = ossos.pipeline.extract_hsc:main',
-                   'comb_to_astrom = ossos.pipeline.comb_to_astrom:main']
+                   'plot_match_eff = ossos.plotting.plot_match_file:main',
+                   'comb_to_astrom = ossos.pipeline.comb_to_astrom:main',]
 
 gui_scripts = ['validate = ossos.tools.validate:main']
 
