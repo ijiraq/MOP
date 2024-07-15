@@ -13,20 +13,18 @@ def extract_image(filename):
         beeid = int(hdulist[0].header['T_BEEID'])
         expnum = int(re.match('HSCE(\d+)', expid).group(1)) + beeid
 
-        extensions = {'_image': 1, '_weight': 3, '_mask': 2}
-        for extension in extensions:
-            out_imagename = f"{expnum}p{ccdno:02d}{extension}.fits"
-            new_hdu = hdulist[0]
-            SKYLEVEL = hdulist[0].header.get('SKYLEVEL', None)
-            if SKYLEVEL is not None:
-                new_hdu.data = numpy.int16(hdulist[1].data + SKYLEVEL)
-                new_hdu.header['GAIN'] = hdulist[1].header.get('T_GAIN1', 4.5)
-            new_hdu.data = hdulist[extensions[extension]].data
-            for keyword in hdulist[extensions[extension]].header:
-                if keyword in ['EXTEND', 'XTENSION'] :
-                    continue
-                new_hdu.header[keyword] = hdulist[extensions[extension]].header[keyword]
-            new_hdu.writeto(out_imagename, overwrite=True)
+        file_extensions = {1: '_image', 2: '_mask', 3: '_weight'}
+        for extension in [2, 3, 1]:
+            if file_extensions[extension] == '_image':
+                SKYLEVEL = hdulist[0].header.get('SKYLEVEL', 0)
+                hdulist[extension].data += SKYLEVEL
+                hdulist[extension].header['GAIN'] = hdulist[extension].header.get('T_GAIN1', 4.5)
+                hdulist[extension].header.extend(hdulist[0].header, unique=True, update=False, strip=True)
+            out_image_name = f"{expnum}p{ccdno:02d}{file_extensions[extension]}.fits"
+            fits.writeto(out_image_name,
+                         data=hdulist[extension].data,
+                         header=hdulist[extension].header,
+                         overwrite=True)
     return f"{expnum}p{ccdno:02d}"
 
 

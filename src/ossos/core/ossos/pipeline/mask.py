@@ -1,10 +1,10 @@
-import sys
-from astropy.io import fits
-import numpy
-from astropy.table import Table
 import argparse
+import numpy
+from astropy.io import fits
+from astropy.table import Table
 
-MP_MASK=['MP_NO_DATA', 'MP_SAT', 'MP_BAD', 'MP_INTRP', 'MP_UNMASKEDNAN', 'MP_EDGE']
+MP_MASK = ['MP_NO_DATA', 'MP_SAT', 'MP_BAD', 'MP_INTRP', 'MP_UNMASKEDNAN', 'MP_EDGE']
+
 
 def read_obj_matt(filename):
     """
@@ -15,17 +15,7 @@ def read_obj_matt(filename):
     Strategy is to read the header and store as meta keyword
     """
     names = ['x', 'y', 'flux', 'size', 'max_int', 'elon']
-    _t = Table(names=names)
-    with open(filename, 'r') as fobj:
-        header = ""
-        rows = []
-        for line in fobj.readlines():
-            if line[0]=='#':
-                header += line
-                continue
-            _t.add_row([ float(x) for x in line.strip('\n').split()])
-
-    _t.meta['header']=header
+    _t = Table.read(filename, format='ascii.no_header', names=names)
     return _t
 
 
@@ -35,8 +25,9 @@ def write_obj_matt(table, filename):
 
     """
     with open(filename, 'w') as fobj:
-        fobj.write(table.meta['header'])
-        table.write(fobj,format='ascii.fixed_width_no_header', delimiter="")
+        for line in table.meta['comments']:
+            fobj.write(f"#{line}\n")
+        table.write(fobj, format='ascii.fixed_width_no_header', delimiter="")
 
 
 def main():
@@ -49,9 +40,9 @@ def main():
     mask = fits.open(args.mask)
     bit_mask = 0
     for mp in MP_MASK:
-        bit_mask += 2**mask[2].header[mp]
+        bit_mask += 2**mask[0].header[mp]
 
-    m = mask[2].data[obj_table['y'].astype(numpy.int16), obj_table['x'].astype(numpy.int16)]
+    m = mask[0].data[obj_table['y'].astype(numpy.int16), obj_table['x'].astype(numpy.int16)]
     obj_table=obj_table[(m & bit_mask) == 0]
     write_obj_matt(obj_table, args.output)
 

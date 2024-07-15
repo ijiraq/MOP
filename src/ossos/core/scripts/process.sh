@@ -2,26 +2,29 @@
 
 corr=(${1} ${2} ${3})
 
-imgs=Array()
+main=$(pwd)
+
+# move into a working directory named for the field and chipnum
+field=$(gethead ${corr[0]} OBJECT)
+ccdnum=$(gethead ${corr[0]} T_SDOID)
+detnum=$(gethead ${corr[0]} DET-ID)
+echo ${field}/${detnum}
+mkdir -p ${field}/${detnum} || exit 1
+cd ${field}/${detnum} || exit 1
+
+imgs=()
 for c in ${corr[@]};
 do
+  [ -f ${c} ] || ln -s ${main}/${c} ./
   imgs+=( $(extract_hsc ${c}) )
   ln -s ${imgs[-1]}_image.fits ${imgs[-1]}.fits
 done
 
-main=$(pwd)
-
-# move into a working directory named for the field and chipnum
-field=$(gethead ${imgs[0]}.fits OBJECT)
-ccdnum=$(gethead ${imgs[0]}.fits T_SDOID)
-detnum=$(gethead ${imgs[0]}.fits DET-ID)
-#mkdir -p ${field}/${detnum} || exit 1
-#cd ${field}/${detnum} || exit 1
 
 # link the images into the working directory
-#[ -f ${exp1} ] || ln -s ${main}/${exp1} ./
-#[ -f ${exp2} ] || ln -s ${main}/${exp2} ./
-#[ -f ${exp3} ] || ln -s ${main}/${exp3} ./
+[ -f ${exp1} ] || ln -s ${main}/${exp1} ./
+[ -f ${exp2} ] || ln -s ${main}/${exp2} ./
+[ -f ${exp3} ] || ln -s ${main}/${exp3} ./
 
 min_rate=${min_rate=0.5}
 max_rate=${max_rate=5.0}
@@ -86,7 +89,7 @@ function do_search {
     ln -s ${img}_weight.fits weight.fits
     step1jmp -f ${prefix}${img} -w ${fwhm} -m ${_MAX_COUNT} -t ${_WAVE_THRESHOLD}
     step1matt -f ${prefix}${img} -w ${fwhm} -m ${_MAX_COUNT} -t ${_SEX_THRESHOLD}
-    mask ${prefix}${img}.obj.matt ${prefix}${img}_mask.fits ${prefix}${img}.obj.matt
+    mask_obj_matt ${prefix}${img}.obj.matt ${prefix}${img}_mask.fits ${prefix}${img}.obj.matt
   done
 
   # Determine lists of non-stationary sources.
