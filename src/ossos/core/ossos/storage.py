@@ -697,8 +697,8 @@ def _cutout_expnum(observation, sky_coord, radius):
             hdu = fits.ImageHDU(data=result.data, header=hdu.header)
             hdu.header['CRPIX1'] = p1
             hdu.header['CRPIX2'] = p2
-            hdu.header['XOFFSET'] = result.origin_cutout[0] - 1
-            hdu.header['YOFFSET'] = result.origin_cutout[1] - 1
+            hdu.header['XOFFSET'] = result.origin_cutout[0] - 0
+            hdu.header['YOFFSET'] = result.origin_cutout[1] - 0
             hdu.converter = CoordinateConverter(hdu.header['XOFFSET'], hdu.header['YOFFSET'])
             hdu.wcs = WCS(hdu.header)
             bbox = result.bbox_original

@@ -85,10 +85,10 @@ class WCS(astropy_wcs.WCS):
         """
         The order of the PV fit, provided by astgwyn
         """
-        return self.header['NORDFIT']
+        return self.header.get('NORDFIT', 0)
 
     def xy2sky(self, x, y, usepv=True):
-        if usepv:
+        if usepv and self.nord >= 0:
             try:
                 return xy2skypv(x=numpy.array(x), y=numpy.array(y),
                                 crpix1=self.crpix1,
@@ -111,7 +111,7 @@ class WCS(astropy_wcs.WCS):
         if isinstance(dec, Quantity):
             dec = dec.to(units.degree).value
         try:
-            if usepv:
+            if usepv and self.nord >= 0:
                 return sky2xypv(ra=ra,
                                 dec=dec,
                                 crpix1=self.crpix1,
