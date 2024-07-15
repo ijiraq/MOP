@@ -1,26 +1,24 @@
 #!/bin/bash
 
 
-exp1=${1}
-exp2=${2}
-exp3=${3}
+imgs=(${1%.fits} ${2%.fits} ${3%.fits})
 main=$(pwd)
 
 # move into a working directory named for the field and chipnum
-field=$(gethead ${exp1} OBJECT)
-ccdnum=$(gethead ${exp1} T_SDOID)
-detnum=$(gethead ${exp1} DET-ID)
-mkdir -p ${field}/${detnum} || exit 1
-cd ${field}/${detnum} || exit 1
+field=$(gethead ${imgs[0]}.fits OBJECT)
+ccdnum=$(gethead ${imgs[0]}.fits T_SDOID)
+detnum=$(gethead ${imgs[0]}.fits DET-ID)
+#mkdir -p ${field}/${detnum} || exit 1
+#cd ${field}/${detnum} || exit 1
 
 # link the images into the working directory
-[ -f ${exp1} ] || ln -s ${main}/${exp1} ./
-[ -f ${exp2} ] || ln -s ${main}/${exp2} ./
-[ -f ${exp3} ] || ln -s ${main}/${exp3} ./
+#[ -f ${exp1} ] || ln -s ${main}/${exp1} ./
+#[ -f ${exp2} ] || ln -s ${main}/${exp2} ./
+#[ -f ${exp3} ] || ln -s ${main}/${exp3} ./
 
 min_rate=${min_rate=0.5}
-max_rate=${max_rate=10.0}
-angle=${angle=-23}
+max_rate=${max_rate=5.0}
+angle=${angle=13}
 width=${width=30}
 plant_width=${plant_width=20}
 num=${num=60}
@@ -32,7 +30,7 @@ _FWHM=4.0
 _MAX_COUNT=30000
 
 
-imgs=( $(extract_hsc $exp1) $(extract_hsc $exp2) $(extract_hsc $exp3) )
+#imgs=( $(extract_hsc $exp1) $(extract_hsc $exp2) $(extract_hsc $exp3) )
 expnums=()
 echo "${imgs[@]}"
 for img in "${imgs[@]}";
@@ -75,26 +73,28 @@ prefix=""
 function do_search {
   for img in  "${imgs[@]}";
     do
-    stepZjmp -f ${preix}${img}
-    jmpmakepsf.csh ./ ${preix}${img} yes yes
-    fwhm=$(cat ${preix}${img}.fwhm)
+    stepZjmp -f ${prefix}${img}
+    jmpmakepsf.csh ./ ${prefix}${img} yes yes
+    fwhm=$(cat ${prefix}${img}.fwhm)
     rm -f weight.fits
     ln -s ${img}_weight.fits weight.fits
-    step1jmp -f ${preix}${img} -w ${fwhm} -m ${_MAX_COUNT} -t ${_WAVE_THRESHOLD}
-    step1matt -f ${preix}${img} -w ${fwhm} -m ${_MAX_COUNT} -t ${_SEX_THRESHOLD}
+    step1jmp -f ${prefix}${img} -w ${fwhm} -m ${_MAX_COUNT} -t ${_WAVE_THRESHOLD}
+    step1matt -f ${prefix}${img} -w ${fwhm} -m ${_MAX_COUNT} -t ${_SEX_THRESHOLD}
   done
 
   # Determine lists of non-stationary sources.
-  step2jmp ${preix}${imgs[0]} ${preix}${imgs[1]} ${preix}${imgs[2]}
-  step2matt_jmp -f1 ${preix}${imgs[0]} -f2 ${preix}${imgs[1]} -f3 ${preix}${imgs[2]}
+  step2jmp ${prefix}${imgs[0]} ${prefix}${imgs[1]} ${prefix}${imgs[2]}
+  step2matt_jmp -f1 ${prefix}${imgs[0]} -f2 ${prefix}${imgs[1]} -f3 ${prefix}${imgs[2]}
 
   # link non-stationary source lists into moving objects.
-  step3jmp -f1 ${preix}${imgs[0]} -f2 ${preix}${imgs[1]} -f3 ${preix}${imgs[2]} -a ${angle} -w ${width} -rn ${min_rate} -rx ${max_rate}
-  step3matt -f1 ${preix}${imgs[0]} -f2 ${preix}${imgs[1]} -f3 ${preix}${imgs[2]} -a ${angle} -w ${width} -rn ${min_rate} -rx ${max_rate}
+  # step3jmp -f1 ${prefix}${imgs[0]} -f2 ${prefix}${imgs[1]} -f3 ${prefix}${imgs[2]} -a ${angle} -w ${width} -rn ${min_rate} -rx ${max_rate}
+  step3matt -f1 ${prefix}${imgs[0]} -f2 ${prefix}${imgs[1]} -f3 ${prefix}${imgs[2]} -a ${angle} -w ${width} -rn ${min_rate} -rx ${max_rate}
+  echo "cp ${prefix}${imgs[0]}.moving.matt ${prefix}${imgs[0]}.moving.jmp"
+  cp ${prefix}${imgs[0]}.moving.matt ${prefix}${imgs[0]}.moving.jmp
 
   # make a combined candidate list.
-  comb-list ${preix}${imgs[0]}
-  comb_to_astrom ${preix}${imgs[0]}
+  comb-list ${prefix}${imgs[0]}
+  comb_to_astrom ${prefix}${imgs[0]}
 
 }
 
@@ -106,7 +106,7 @@ for i in $(seq 1 ${loops});
 do
   plant_novos "${expnums[@]}" --ccd ${ccdnum} -v --type p --rmin ${min_rate} --rmax ${max_rate} \
     --ang "${angle}" --width ${plant_width} --num ${num}
-  preix="fk"
+  prefix="fk"
   do_search
   ccdstr=$(echo ${ccdnum}|awk '{printf("%02d",$1)}')
   astrom_mag_check_novos "${expnums[0]}" "${ccdnum}" --expnum "${expnums[0]}" --astrom-filename "fk${expnums[0]}p${ccdstr}.measure3.cands.astrom" --fk --type p
