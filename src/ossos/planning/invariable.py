@@ -58,7 +58,7 @@ def trevonc(lon, lat, chiangchoi_plane=False):
     lon = numpy.arctan2(yi, xi)
     return (lat, lon)
 
-def forced(lon, lat chiangchoi_plane=False):
+def forced(lon, lat, chiangchoi_plane=False):
     """convert lat/lon from the forced plane to the ecliptic plane."""
 
     x = numpy.cos(lon) * numpy.cos(lat)
